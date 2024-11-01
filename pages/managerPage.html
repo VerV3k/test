@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Страница руководителя</title>
+    <link rel="stylesheet" href="../style/reset.css">
+    <link rel="stylesheet" href="../style/normalize.css">
+    <link rel="stylesheet" href="../style/style.css">
+    <script defer src="../js/script.js"></script>
+</head>
+
+<body>
+    <section class="main-page__dute">
+        <div class="main-page__dute-wrapper">
+            <header class="dute__header">
+                <div class="main-page__logo-blockh">
+                    <img src="../icons/Logowithbgc.png" alt="Logo">
+                    <div class="logo-block">
+                        <span class="header__logo-text">Маркетинг Плюс</span>
+                        <span class="header__logo-text-mini">служба безопасности</span>
+                    </div>
+                </div>
+                <div class="second-header__block-manage">
+                    <div class="link-block">
+                        <li><a href="" class="link active">Пользователи</a></li>
+                        <li><a href="manageDutyReport.html" class="link">Отчет дежурств</a></li>
+                    </div>
+                    <div class="log-out-button__block"><button class="log-out-button font-bold-white">
+                            <img src="../icons/exit.svg" alt="выход ">Виталий Г.</button>
+                    </div>
+                </div>
+
+                <!-- <div class="owerflow-exit font-regular">
+                    <div class="exit-container">
+                        <span class="cross-exit"><img src="../icons/krest.svg" alt="cross"></span>
+                        <span class="exit-text">Вы действительно хотите выйти?</span>
+                        <div class="button-exit-container font-regular-white">
+                            <button class="exit-cancellation font-regular-white">Отмена</button>
+                            <button class="exit-completed font-regular-white">Выйти</button>
+                        </div>
+                    </div>
+                </div> -->
+
+            </header>
+            <section class="main-block">
+                <aside class="dute__aside">
+                    <div class="dute__aside-block font-regular-white">
+                        <div class="notifications-block">
+                            <div class="notice-block">
+                                <span><img src="../icons/notice.svg" alt="оповещение"></span>
+                                <span>Уведомления</span>
+                                <span class="arrow-und"><img src="../icons/ArrowBottom.png" alt=""></span>
+                            </div>
+                            <div class="notifications">
+                                <span>Заменено дежурство на 14 октября </span>
+                                <span>Заменено дежурство на 13 октября </span>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+                <main class="main-table">
+                    <div class="search">
+                        <input type="text" placeholder="Поиск пользователя">
+                        <button class="btn-search"><img src="../icons/search.svg" alt=""></button>
+                    </div>
+                    <div class="table-container">
+                        <table class="main-cms">
+                            <thead>
+                                <tr class="table-section__tr-th">
+                                    <th class="main-cms-th">ID</th>
+                                    <th class="main-cms-th">Имя</th>
+                                    <th class="main-cms-th">Фамилия</th>
+                                    <th class="main-cms-th">Роль</th>
+                                    <th class="main-cms-th">Логин</th>
+                                    <th class="main-cms-th">Пароль</th>
+                                    <th class="main-cms-th">Телефон</th>
+                                    <th></th> <!-- Для кнопки редактирования -->
+                                    <th></th> <!-- Для кнопки удаления -->
+                                </tr>
+                            </thead>
+                            <tbody class="table-position">
+                                <!-- Динамически добавляемые строки будут здесь -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="owerflow-complitede">
+                        <div class="completed-wrapper font-regular-menu">
+                            <span class="exit-completed"><img src="../icons/krest.svg" alt="cross"></span>
+                            <div class="completed-chek">
+                                <span>Пользователь добавлен</span>
+                                <span><img src="../icons/checkbox.svg" alt=""></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button class="add-button font-bold-white">Добавить пользователя</button>
+                    </div>
+                    <div class="owerflow">
+                        <div class="user-form-container">
+                            <span class="cross"><img src="../icons/krest.svg" alt="cross"></span>
+                            <span class="font-medium-24px position-text">Добавить пользователя</span>
+                            <form class="add-user-form font-bold">
+                                <div class="input-container">
+                                    <label for="firstName">Имя:</label>
+                                    <input type="text" id="firstName" name="firstName" required>
+                                    <span class="error-message" id="firstNameError"></span> <!-- Элемент для ошибки -->
+
+                                    <label for="lastName">Фамилия:</label>
+                                    <input type="text" id="lastName" name="lastName" required>
+                                    <span class="error-message" id="lastNameError"></span> <!-- Элемент для ошибки -->
+
+                                    <label for="phone">Телефон:</label>
+                                    <input type="tel" id="phone" name="phone">
+                                    <span class="error-message" id="phoneError"></span> <!-- Элемент для ошибки -->
+                                </div>
+
+                                <div class="input-container">
+                                    <label for="role">Роль:</label>
+                                    <select id="role" name="role" required>
+                                        <option value="Администратор">Администратор</option>
+                                        <option value="Главный администратор">Главный Администратор</option>
+                                        <option value="Сотрудник">Сотрудник</option>
+                                    </select>
+
+                                    <label for="login">Логин:</label>
+                                    <input type="text" id="login" name="login" required>
+                                    <span class="error-message" id="loginError"></span> <!-- Элемент для ошибки -->
+
+                                    <label for="password">Пароль:</label>
+                                    <input type="password" id="password" name="password" required>
+                                    <span class="error-message" id="passwordError"></span> <!-- Элемент для ошибки -->
+
+                                    <button type="submit" class="add-button-ac font-bold-white">Добавить
+                                        пользователя</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                </main>
+            </section>
+            <footer class="dute__footer">
+                <div class="main-page__logo-blockh">
+                    <img src="../icons/Logowithbgc.png" alt="Logo">
+                    <div class="logo-block">
+                        <span class="header__logo-text">Маркетинг Плюс</span>
+                        <span class="header__logo-text-mini">служба безопасности</span>
+                    </div>
+                </div>
+                <div>
+                    <li><a href="" class="link">Вопрос руководству</a>
+                </div>
+        </div>
+        </footer>
+        </div>
+    </section>
+</body>
+
+</html>
