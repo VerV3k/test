@@ -325,7 +325,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.addEventListener("DOMContentLoaded", () => {
   // Массив с путями страниц, на которых будет работать скрипт
-  const allowedPages = ["/pages/administrator.html", "/pages/managerPage.html"]; // Замените на нужные пути
+  const allowedPages = [
+    "/pages/administrator.html",
+    "/pages/administratorEdit.html",
+    "/pages/managerPage.html",
+    "/pages/manageDutyReport.html",
+    "/pages/pastdutyreport.html",
+    "/pages/duty.html",
+  ]; // Замените на нужные пути
 
   // Проверяем, находится ли пользователь на одной из разрешённых страниц
   if (allowedPages.includes(window.location.pathname)) {
@@ -353,11 +360,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const completeButton = exitMenu.querySelector(".exit-completed");
 
       closeButton.addEventListener("click", () => {
-        exitMenu.remove(); 
+        exitMenu.remove();
       });
 
       cancelButton.addEventListener("click", () => {
-        exitMenu.remove(); 
+        exitMenu.remove();
       });
 
       completeButton.addEventListener("click", () => {
@@ -369,8 +376,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     logOutButton.addEventListener("click", () => {
       const header = document.querySelector(".dute__header");
-      const exitMenu = createExitMenu(); 
-      header.appendChild(exitMenu); 
+      const exitMenu = createExitMenu();
+      header.appendChild(exitMenu);
     });
   }
 });
