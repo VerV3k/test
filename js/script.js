@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const currentPage = window.location.pathname;
   if (
     currentPage !== "/pages/administrator.html" &&
-    currentPage !== "/pages/managerPage.html"
+    currentPage !== "/pages/pastdutyreport.html"
   ) {
     return; // Exit if not on the specified pages
   }
@@ -374,17 +374,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.addEventListener("DOMContentLoaded", () => {
   // Массив с путями страниц, на которых будет работать скрипт
-  // const allowedPages = [
-  //   "/pages/administrator.html",
-  //   "/pages/administratorEdit.html",
-  //   "/pages/duty.html",
-  //   "/pages/pastdutyreport.html",
-  //   "/pages/managerPage.html",
-  //   "/pages/manageDutyReport.html",
-  // ];
+  const allowedPages = [
+    "/pages/administrator.html",
+    "/pages/administratorEdit.html",
+    "/pages/duty.html",
+    "/pages/pastdutyreport.html",
+    "/test/pages/managerPage.html",
+    "/pages/manageDutyReport.html",
+  ];
 
   // Проверяем, находится ли пользователь на одной из разрешённых страниц
-  // if (allowedPages.includes(window.location.pathname)) {
+  if (allowedPages.includes(window.location.pathname)) {
     const logOutButton = document.querySelector(".log-out-button");
 
     // Функция для создания меню выхода
@@ -429,12 +429,11 @@ document.addEventListener("DOMContentLoaded", () => {
       header.appendChild(exitMenu);
     });
   }
-// }
-);
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   // if (window.location.pathname !== "index.html") {
-  //   return; 
+  //   return;
   // }
 
   const form = document.querySelector("#form-sign-in");
@@ -442,7 +441,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (form) {
     form.addEventListener("submit", (event) => {
-      event.preventDefault(); 
+      event.preventDefault();
       if (errorMessageElement) {
         errorMessageElement.textContent = "";
       }
@@ -457,7 +456,6 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       if (user) {
-
         switch (user.role) {
           case "администратор":
             window.location.href = "pages/administrator.html";
@@ -475,11 +473,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
       } else {
-        
         if (storedUsers.length === 0) {
           window.location.href = "pages/managerPage.html";
         } else {
-          
           if (errorMessageElement) {
             errorMessageElement.textContent =
               "Неправильное имя пользователя или пароль";
@@ -487,5 +483,5 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     });
-  } 
+  }
 });
