@@ -374,17 +374,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.addEventListener("DOMContentLoaded", () => {
   // Массив с путями страниц, на которых будет работать скрипт
-  const allowedPages = [
-    "/pages/administrator.html",
-    "/pages/administratorEdit.html",
-    "/pages/duty.html",
-    "/pages/pastdutyreport.html",
-    "/pages/managerPage.html",
-    "/pages/manageDutyReport.html",
-  ];
+  // const allowedPages = [
+  //   "/pages/administrator.html",
+  //   "/pages/administratorEdit.html",
+  //   "/pages/duty.html",
+  //   "/pages/pastdutyreport.html",
+  //   "/pages/managerPage.html",
+  //   "/pages/manageDutyReport.html",
+  // ];
 
   // Проверяем, находится ли пользователь на одной из разрешённых страниц
-  if (allowedPages.includes(window.location.pathname)) {
+  // if (allowedPages.includes(window.location.pathname)) {
     const logOutButton = document.querySelector(".log-out-button");
 
     // Функция для создания меню выхода
@@ -429,7 +429,8 @@ document.addEventListener("DOMContentLoaded", () => {
       header.appendChild(exitMenu);
     });
   }
-});
+// }
+);
 
 document.addEventListener("DOMContentLoaded", () => {
   // if (window.location.pathname !== "index.html") {
