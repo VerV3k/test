@@ -1,4 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // Check if the current page is either administrator.html or managerPage.html
+  const currentPage = window.location.pathname;
+  if (
+    currentPage !== "/pages/administrator.html" &&
+    currentPage !== "/pages/managerPage.html"
+  ) {
+    return; // Exit if not on the specified pages
+  }
+
   const addButton = document.querySelector(".add-button");
   const overflowContainer = document.querySelector(".owerflow");
   const closeButton = document.querySelector(".cross");
@@ -6,21 +15,29 @@ document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.querySelector(".table-position");
   const searchInput = document.querySelector(".search input[type='text']");
   const searchButton = document.querySelector(".btn-search");
+  const notificationContainer = document.querySelector(".owerflow-complitede"); // Container for notifications
+  const notificationText = notificationContainer.querySelector(
+    ".completed-chek span"
+  ); // Notification text
+  const exitCompletedButton =
+    notificationContainer.querySelector(".exit-completed"); // Close button for notifications
+  let message;
+  let editMode = false; // Variable to track edit mode
+  let currentUserId; // Variable to store the ID of the currently edited user
 
-  let editMode = false; // Переменная для отслеживания режима редактирования
-  let currentUserId;
-
+  // Get existing users from localStorage
   const getStoredUsers = () => JSON.parse(localStorage.getItem("users")) || [];
 
-  // Генерация id
+  // Generate a unique three-digit ID
   const generateUniqueId = (storedUsers) => {
     let id;
     do {
-      id = Math.floor(100 + Math.random() * 900);
-    } while (storedUsers.some((user) => user.id === id));
+      id = Math.floor(100 + Math.random() * 900); // Generate a number between 100 and 999
+    } while (storedUsers.some((user) => user.id === id)); // Check if this ID already exists
     return id;
   };
 
+  // Populate the table with data from localStorage on page load
   const populateTable = () => {
     tableBody.innerHTML = "";
     const storedUsers = getStoredUsers();
@@ -30,29 +47,30 @@ document.addEventListener("DOMContentLoaded", () => {
   if (addButton) {
     addButton.addEventListener("click", () => {
       overflowContainer.style.display = "block";
-      clearErrors();
-      editMode = false;
-      form.reset();
+      clearErrors(); // Clear errors when opening the form
+      editMode = false; // Set to add mode
+      form.reset(); // Reset form
       document.querySelector(".position-text").textContent =
-        "Добавить пользователя";
+        "Добавить пользователя"; // Reset header text
       document.querySelector(".add-button-ac").textContent =
-        "Добавить пользователя";
+        "Добавить пользователя"; // Reset button text
     });
   }
 
   if (closeButton) {
     closeButton.addEventListener("click", () => {
       overflowContainer.style.display = "none";
-      clearErrors();
-      editMode = false;
+      clearErrors(); // Clear errors when closing the form
+      editMode = false; // Reset mode when closing
     });
   }
 
   if (form) {
     form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      clearErrors();
+      event.preventDefault(); // Prevent default form behavior
+      clearErrors(); // Clear previous error messages
 
+      // Get data from the form and trim whitespace from edges
       const firstName = document.querySelector("#firstName").value.trim();
       const lastName = document.querySelector("#lastName").value.trim();
       const phone = document.querySelector("#phone").value.trim();
@@ -60,16 +78,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const login = document.querySelector("#login").value.trim();
       const password = document.querySelector("#password").value.trim();
 
-      // Получение существующих пользователей из localStorage
+      // Get existing users from localStorage
       const storedUsers = getStoredUsers();
 
+      // Check for unique login and no spaces
       if (storedUsers.some((user) => user.login === login && !editMode)) {
         showError("loginError", "Логин должен быть уникальным.");
         return;
       }
 
       if (!/^[а-яА-ЯёЁ]+$/.test(firstName)) {
-        // Проверка на наличие только русских букв в имени
         showError(
           "firstNameError",
           "Имя должно содержать только русские буквы."
@@ -85,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // Validate login and password in a separate function
       const validationResult = validateLoginAndPassword(login, password);
       if (!validationResult.isValid) {
         showError(
@@ -95,8 +114,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (!phone || phone.length < 18) {
-        // Проверка длины номера телефона
-        showError("phoneError", "Пожалуйста, введите полный номер телефона");
+        showError(
+          "phoneError",
+          "Пожалуйста, введите полный номер телефона (должен быть не менее 18 символов)."
+        );
         return;
       }
 
@@ -119,6 +140,8 @@ document.addEventListener("DOMContentLoaded", () => {
           password,
         };
         saveUpdatedUserData(updatedUserData);
+        message = "Пользователь изменён";
+        displayNotification(message);
       } else {
         const userId = generateUniqueId(storedUsers);
         const userData = {
@@ -132,6 +155,8 @@ document.addEventListener("DOMContentLoaded", () => {
         };
         saveUserData(userData);
         addToTable(userData);
+        message = "Пользователь добавлен";
+        displayNotification(message);
       }
 
       overflowContainer.style.display = "none";
@@ -139,14 +164,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Функция для сохранения данных в localStorage
+  // Function to save data to localStorage
   const saveUserData = (userData) => {
     const storedUsers = getStoredUsers();
     storedUsers.push(userData);
     localStorage.setItem("users", JSON.stringify(storedUsers));
   };
 
-  // Функция для обновления данных пользователя в localStorage
+  // Function to update user data in localStorage
   const saveUpdatedUserData = (updatedUserData) => {
     let storedUsers = getStoredUsers();
     storedUsers = storedUsers.map((user) =>
@@ -154,24 +179,24 @@ document.addEventListener("DOMContentLoaded", () => {
     );
     localStorage.setItem("users", JSON.stringify(storedUsers));
     populateTable();
-    overflowContainer.style.display = "none";
-    form.reset();
+    overflowContainer.style.display = "none"; // Close form after update
+    form.reset(); // Reset form after update
   };
 
-  // Функция для добавления данных в таблицу
+  // Function to add data to the table
   const addToTable = (userData) => {
     const newRow = `
-        <tr class="table-section__tr font-regular" data-id="${userData.id}">
-            <td>${userData.id}</td>
-            <td>${userData.firstName}</td>
-            <td>${userData.lastName}</td>
-            <td>${userData.role}</td>
-            <td>${userData.login}</td>
-            <td>${userData.password}</td>
-            <td>${userData.phone}</td>
-            <td><img src="../icons/edit.svg" alt="изменение" class="edit-button"></td>
-            <td><img src="../icons/delete.svg" alt="удаление" class="delete-button"></td>
-        </tr>`;
+         <tr class="table-section__tr font-regular" data-id="${userData.id}">
+             <td>${userData.id}</td>
+             <td>${userData.firstName}</td>
+             <td>${userData.lastName}</td>
+             <td>${userData.role}</td>
+             <td>${userData.login}</td>
+             <td>${userData.password}</td>
+             <td>${userData.phone}</td>
+             <td><img src="../icons/edit.svg" alt="изменение" class="edit-button"></td>
+             <td><img src="../icons/delete.svg" alt="удаление" class="delete-button"></td>
+         </tr>`;
 
     tableBody.insertAdjacentHTML("beforeend", newRow);
 
@@ -188,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   };
 
-  // Функция для удаления пользователя из localStorage и таблицы
+  // Function to delete a user from localStorage and the table
   const deleteUser = (id) => {
     let storedUsers = getStoredUsers();
     storedUsers = storedUsers.filter((user) => user.id !== id);
@@ -196,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
     populateTable();
   };
 
-  // Функция для редактирования пользователя
+  // Function to edit a user
   const editUser = (userId) => {
     editMode = true;
     currentUserId = userId;
@@ -217,7 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "Сохранить изменения";
   };
 
-  // Функция для маски номера телефона
+  // Function to mask phone number input
   const maskPhoneInput = (event) => {
     const input = event.target;
     const value = input.value.replace(/\D/g, "");
@@ -252,6 +277,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#passwordError").textContent = "";
   };
 
+  /**
+   * Remove spaces when typing in form fields.
+   */
   const removeSpaces = function (event) {
     this.value = this.value.replace(/\s+/g, "");
   };
@@ -261,16 +289,22 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelector("#login").addEventListener("input", removeSpaces);
   document.querySelector("#password").addEventListener("input", removeSpaces);
 
-  const allowOnlyRussianLetters = function (event) {
-    this.value = this.value.replace(/[^а-яА-ЯёЁ]/g, "");
-  };
-
-  const allowOnlyRussianLettersLastName = function (event) {
+  /**
+   * Allow only Russian letters in Name field.
+   */
+  const allowOnlyRussianLettersInFirstName = function (event) {
     this.value = this.value.replace(/[^а-яА-ЯёЁ]/g, "");
   };
 
   /**
-   * Валидация логина и пароля.
+   * Allow only Russian letters in Last Name field.
+   */
+  const allowOnlyRussianLettersInLastName = function (event) {
+    this.value = this.value.replace(/[^а-яА-ЯёЁ]/g, "");
+  };
+
+  /**
+   * Validate login and password.
    */
   const validateLoginAndPassword = (login, password) => {
     if (/^[а-яА-ЯёЁ]*$/.test(login)) {
@@ -290,7 +324,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return { isValid: true };
   };
 
-  //  *Поиск по имени и фамилии.
+  /**
+   * Search by first name and last name.
+   */
 
   searchButton.addEventListener("click", () => {
     const queryString = searchInput.value.toLowerCase();
@@ -317,10 +353,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document
     .querySelector("#firstName")
-    .addEventListener("input", allowOnlyRussianLetters);
+    .addEventListener("input", allowOnlyRussianLettersInFirstName);
   document
     .querySelector("#lastName")
-    .addEventListener("input", allowOnlyRussianLettersLastName);
+    .addEventListener("input", allowOnlyRussianLettersInLastName);
+
+  const displayNotification = (message) => {
+    notificationText.textContent = message;
+    notificationContainer.style.display = "block";
+
+    setTimeout(() => {
+      notificationContainer.style.display = "none";
+    }, 3000);
+
+    exitCompletedButton.onclick = () => {
+      notificationContainer.style.display = "none";
+    };
+  };
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -328,11 +377,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const allowedPages = [
     "/pages/administrator.html",
     "/pages/administratorEdit.html",
+    "/pages/duty.html",
+    "/pages/pastdutyreport.html",
     "/pages/managerPage.html",
     "/pages/manageDutyReport.html",
-    "/pages/pastdutyreport.html",
-    "/pages/duty.html",
-  ]; // Замените на нужные пути
+  ];
 
   // Проверяем, находится ли пользователь на одной из разрешённых страниц
   if (allowedPages.includes(window.location.pathname)) {
@@ -380,4 +429,62 @@ document.addEventListener("DOMContentLoaded", () => {
       header.appendChild(exitMenu);
     });
   }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  // if (window.location.pathname !== "index.html") {
+  //   return; 
+  // }
+
+  const form = document.querySelector("#form-sign-in");
+  const errorMessageElement = document.querySelector(".error-message-log"); // Элемент для вывода ошибок
+
+  if (form) {
+    form.addEventListener("submit", (event) => {
+      event.preventDefault(); 
+      if (errorMessageElement) {
+        errorMessageElement.textContent = "";
+      }
+
+      const loginInput = document.querySelector("#login").value.trim();
+      const passwordInput = document.querySelector("#password").value.trim();
+
+      const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
+
+      const user = storedUsers.find(
+        (user) => user.login === loginInput && user.password === passwordInput
+      );
+
+      if (user) {
+
+        switch (user.role) {
+          case "администратор":
+            window.location.href = "pages/administrator.html";
+            break;
+          case "главный администратор":
+            window.location.href = "pages/managerPage.html";
+            break;
+          case "сотрудник":
+            window.location.href = "pages/duty.html";
+            break;
+          default:
+            if (errorMessageElement) {
+              errorMessageElement.textContent =
+                "Неизвестная роль пользователя.";
+            }
+        }
+      } else {
+        
+        if (storedUsers.length === 0) {
+          window.location.href = "pages/managerPage.html";
+        } else {
+          
+          if (errorMessageElement) {
+            errorMessageElement.textContent =
+              "Неправильное имя пользователя или пароль";
+          }
+        }
+      }
+    });
+  } 
 });
