@@ -1,11 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Check if the current page is either administrator.html or managerPage.html
   const currentPage = window.location.pathname;
   if (
     currentPage !== "/pages/administrator.html" &&
-    currentPage !== "/pages/pastdutyreport.html"
+    currentPage !== "/pages/managerPage.html"
   ) {
-    return; // Exit if not on the specified pages
+    return;
   }
 
   const addButton = document.querySelector(".add-button");
@@ -18,26 +17,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const notificationContainer = document.querySelector(".owerflow-complitede"); // Container for notifications
   const notificationText = notificationContainer.querySelector(
     ".completed-chek span"
-  ); // Notification text
+  );
   const exitCompletedButton =
-    notificationContainer.querySelector(".exit-completed"); // Close button for notifications
+    notificationContainer.querySelector(".exit-completed");
   let message;
-  let editMode = false; // Variable to track edit mode
-  let currentUserId; // Variable to store the ID of the currently edited user
+  let editMode = false;
+  let currentUserId;
 
-  // Get existing users from localStorage
   const getStoredUsers = () => JSON.parse(localStorage.getItem("users")) || [];
 
-  // Generate a unique three-digit ID
   const generateUniqueId = (storedUsers) => {
     let id;
     do {
-      id = Math.floor(100 + Math.random() * 900); // Generate a number between 100 and 999
-    } while (storedUsers.some((user) => user.id === id)); // Check if this ID already exists
+      id = Math.floor(100 + Math.random() * 900);
+    } while (storedUsers.some((user) => user.id === id));
     return id;
   };
 
-  // Populate the table with data from localStorage on page load
   const populateTable = () => {
     tableBody.innerHTML = "";
     const storedUsers = getStoredUsers();
@@ -47,30 +43,29 @@ document.addEventListener("DOMContentLoaded", () => {
   if (addButton) {
     addButton.addEventListener("click", () => {
       overflowContainer.style.display = "block";
-      clearErrors(); // Clear errors when opening the form
-      editMode = false; // Set to add mode
-      form.reset(); // Reset form
+      clearErrors();
+      editMode = false;
+      form.reset();
       document.querySelector(".position-text").textContent =
-        "Добавить пользователя"; // Reset header text
+        "Добавить пользователя";
       document.querySelector(".add-button-ac").textContent =
-        "Добавить пользователя"; // Reset button text
+        "Добавить пользователя";
     });
   }
 
   if (closeButton) {
     closeButton.addEventListener("click", () => {
       overflowContainer.style.display = "none";
-      clearErrors(); // Clear errors when closing the form
-      editMode = false; // Reset mode when closing
+      clearErrors();
+      editMode = false;
     });
   }
 
   if (form) {
     form.addEventListener("submit", (event) => {
-      event.preventDefault(); // Prevent default form behavior
-      clearErrors(); // Clear previous error messages
+      event.preventDefault();
+      clearErrors();
 
-      // Get data from the form and trim whitespace from edges
       const firstName = document.querySelector("#firstName").value.trim();
       const lastName = document.querySelector("#lastName").value.trim();
       const phone = document.querySelector("#phone").value.trim();
@@ -78,10 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const login = document.querySelector("#login").value.trim();
       const password = document.querySelector("#password").value.trim();
 
-      // Get existing users from localStorage
       const storedUsers = getStoredUsers();
 
-      // Check for unique login and no spaces
       if (storedUsers.some((user) => user.login === login && !editMode)) {
         showError("loginError", "Логин должен быть уникальным.");
         return;
@@ -103,7 +96,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Validate login and password in a separate function
       const validationResult = validateLoginAndPassword(login, password);
       if (!validationResult.isValid) {
         showError(
@@ -114,10 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (!phone || phone.length < 18) {
-        showError(
-          "phoneError",
-          "Пожалуйста, введите полный номер телефона (должен быть не менее 18 символов)."
-        );
+        showError("phoneError", "Пожалуйста, введите полный номер телефона");
         return;
       }
 
@@ -164,14 +153,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Function to save data to localStorage
   const saveUserData = (userData) => {
     const storedUsers = getStoredUsers();
     storedUsers.push(userData);
     localStorage.setItem("users", JSON.stringify(storedUsers));
   };
 
-  // Function to update user data in localStorage
   const saveUpdatedUserData = (updatedUserData) => {
     let storedUsers = getStoredUsers();
     storedUsers = storedUsers.map((user) =>
@@ -179,31 +166,74 @@ document.addEventListener("DOMContentLoaded", () => {
     );
     localStorage.setItem("users", JSON.stringify(storedUsers));
     populateTable();
-    overflowContainer.style.display = "none"; // Close form after update
-    form.reset(); // Reset form after update
+    overflowContainer.style.display = "none";
+    form.reset();
   };
+  const currentUser = JSON.parse(localStorage.getItem("currentUser")); // Получаем текущего пользователя
+  const roleSelect = document.querySelector("#role"); // Получаем селектор ролей
 
-  // Function to add data to the table
+  // Проверяем, является ли текущий пользователь обычным администратором
+  if (currentUser && currentUser.role === "Администратор") {
+    // Удаляем опцию главного администратора из селектора
+    const adminOption = Array.from(roleSelect.options).find(
+      (option) => option.value === "Главный администратор"
+    );
+    if (adminOption) {
+      roleSelect.removeChild(adminOption); // Удаляем опцию
+    }
+  }
   const addToTable = (userData) => {
+    const header = document.querySelector(".dute__header");
     const newRow = `
-         <tr class="table-section__tr font-regular" data-id="${userData.id}">
-             <td>${userData.id}</td>
-             <td>${userData.firstName}</td>
-             <td>${userData.lastName}</td>
-             <td>${userData.role}</td>
-             <td>${userData.login}</td>
-             <td>${userData.password}</td>
-             <td>${userData.phone}</td>
-             <td><img src="../icons/edit.svg" alt="изменение" class="edit-button"></td>
-             <td><img src="../icons/delete.svg" alt="удаление" class="delete-button"></td>
-         </tr>`;
+        <tr class="table-section__tr font-regular" data-id="${userData.id}">
+            <td>${userData.id}</td>
+            <td>${userData.firstName}</td>
+            <td>${userData.lastName}</td>
+            <td>${userData.role}</td>
+            <td>${userData.login}</td>
+            <td>${userData.password}</td>
+            <td>${userData.phone}</td>
+            <td><img src="../icons/edit.svg" alt="изменение" class="edit-button"></td>
+            <td><img src="../icons/delete.svg" alt="удаление" class="delete-button"></td>
+        </tr>`;
 
     tableBody.insertAdjacentHTML("beforeend", newRow);
 
     tableBody
       .querySelector(`tr[data-id="${userData.id}"] .delete-button`)
       .addEventListener("click", () => {
-        deleteUser(userData.id);
+        const deleteMenu = document.createElement("div");
+        deleteMenu.className = "owerflow-exit font-regular";
+
+        deleteMenu.innerHTML = `
+            <div class="del-container">
+                <span class="cross-del"><img src="../icons/krest.svg" alt="cross"></span>
+                <span class="del-text">Вы действительно хотите удалить пользователя?</span>
+                <div class="button-del-container font-regular-white">
+                    <button class="del-cancellation font-regular-white">Отмена</button>
+                    <button class="exit-completed font-regular-white">Удалить</button>
+                </div>
+            </div>
+          `;
+
+        const closeButton = deleteMenu.querySelector(".cross-del");
+        const cancelButton = deleteMenu.querySelector(".del-cancellation");
+        const completeButton = deleteMenu.querySelector(".exit-completed");
+
+        closeButton.addEventListener("click", () => {
+          deleteMenu.remove();
+        });
+
+        cancelButton.addEventListener("click", () => {
+          deleteMenu.remove();
+        });
+
+        completeButton.addEventListener("click", () => {
+          deleteUser(userData.id);
+          deleteMenu.remove(); // Удаляем меню после подтверждения
+        });
+
+        header.appendChild(deleteMenu);
       });
 
     tableBody
@@ -213,36 +243,54 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   };
 
-  // Function to delete a user from localStorage and the table
   const deleteUser = (id) => {
-    let storedUsers = getStoredUsers();
-    storedUsers = storedUsers.filter((user) => user.id !== id);
-    localStorage.setItem("users", JSON.stringify(storedUsers));
-    populateTable();
+    const currentUser = JSON.parse(localStorage.getItem("currentUser")); // Получаем текущего пользователя
+    const storedUsers = getStoredUsers(); // Получаем всех пользователей
+    const userToDelete = storedUsers.find((user) => user.id === id); // Находим пользователя, которого хотим удалить
+
+    // Проверяем, является ли текущий пользователь главным администратором и пытается ли он удалить главного администратора
+    if (
+      currentUser.role !== "Главный администратор" &&
+      userToDelete.role === "Главный администратор"
+    ) {
+      alert("Вы не имеете права удалять главного администратора.");
+      return; // Прекращаем выполнение функции
+    }
+
+    let updatedUsers = storedUsers.filter((user) => user.id !== id); // Удаляем пользователя из списка
+    localStorage.setItem("users", JSON.stringify(updatedUsers)); // Сохраняем обновленный список пользователей
+    populateTable(); // Обновляем таблицу
   };
 
-  // Function to edit a user
   const editUser = (userId) => {
-    editMode = true;
-    currentUserId = userId;
+    const currentUser = JSON.parse(localStorage.getItem("currentUser")); // Получаем текущего пользователя
+    const storedUsers = getStoredUsers(); // Получаем всех пользователей
+    const userToEdit = storedUsers.find((user) => user.id === userId); // Находим пользователя, которого хотим редактировать
 
-    const storedUsers = getStoredUsers();
-    const userToEdit = storedUsers.find((user) => user.id === userId);
+    // Проверяем, является ли текущий пользователь главным администратором и пытается ли он редактировать главного администратора
+    if (
+      currentUser.role !== "Главный администратор" &&
+      userToEdit.role === "Главный администратор"
+    ) {
+      alert("Вы не имеете права редактировать главного администратора.");
+      return; // Прекращаем выполнение функции
+    }
 
-    document.querySelector("#firstName").value = userToEdit.firstName;
+    editMode = true; // Устанавливаем режим редактирования
+    currentUserId = userId; // Сохраняем ID текущего пользователя для редактирования
+    document.querySelector("#firstName").value = userToEdit.firstName; // Заполняем форму данными пользователя
     document.querySelector("#lastName").value = userToEdit.lastName;
     document.querySelector("#phone").value = userToEdit.phone;
     document.querySelector("#role").value = userToEdit.role;
     document.querySelector("#login").value = userToEdit.login;
 
-    overflowContainer.style.display = "block";
+    overflowContainer.style.display = "block"; // Показываем форму редактирования
     document.querySelector(".position-text").textContent =
       "Редактировать пользователя";
     document.querySelector(".add-button-ac").textContent =
       "Сохранить изменения";
   };
 
-  // Function to mask phone number input
   const maskPhoneInput = (event) => {
     const input = event.target;
     const value = input.value.replace(/\D/g, "");
@@ -276,12 +324,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#loginError").textContent = "";
     document.querySelector("#passwordError").textContent = "";
   };
-
-  /**
-   * Remove spaces when typing in form fields.
-   */
-  const removeSpaces = function (event) {
-    this.value = this.value.replace(/\s+/g, "");
+  const removeSpaces = (event) => {
+    event.target.value = event.target.value.replace(/\s+/g, ""); // Используем event.target для доступа к элементу
   };
 
   document.querySelector("#firstName").addEventListener("input", removeSpaces);
@@ -289,23 +333,34 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelector("#login").addEventListener("input", removeSpaces);
   document.querySelector("#password").addEventListener("input", removeSpaces);
 
-  /**
-   * Allow only Russian letters in Name field.
-   */
-  const allowOnlyRussianLettersInFirstName = function (event) {
-    this.value = this.value.replace(/[^а-яА-ЯёЁ]/g, "");
+  const forma = document.querySelector(".add-user-form");
+
+  // Функция для преобразования первой буквы в заглавную
+  const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
   };
 
-  /**
-   * Allow only Russian letters in Last Name field.
-   */
-  const allowOnlyRussianLettersInLastName = function (event) {
-    this.value = this.value.replace(/[^а-яА-ЯёЁ]/g, "");
+  // Обработчик события для имени
+  const allowOnlyRussianLettersInFirstName = (event) => {
+    let value = event.target.value.replace(/[^а-яА-ЯёЁ]/g, ""); // Разрешаем только русские буквы
+    event.target.value = capitalizeFirstLetter(value); // Преобразуем первую букву в заглавную
   };
 
-  /**
-   * Validate login and password.
-   */
+  // Обработчик события для фамилии
+  const allowOnlyRussianLettersInLastName = (event) => {
+    let value = event.target.value.replace(/[^а-яА-ЯёЁ]/g, ""); // Разрешаем только русские буквы
+    event.target.value = capitalizeFirstLetter(value); // Преобразуем первую букву в заглавную
+  };
+
+  if (forma) {
+    document
+      .querySelector("#firstName")
+      .addEventListener("input", allowOnlyRussianLettersInFirstName);
+    document
+      .querySelector("#lastName")
+      .addEventListener("input", allowOnlyRussianLettersInLastName);
+  }
+
   const validateLoginAndPassword = (login, password) => {
     if (/^[а-яА-ЯёЁ]*$/.test(login)) {
       return {
@@ -323,10 +378,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     return { isValid: true };
   };
-
-  /**
-   * Search by first name and last name.
-   */
 
   searchButton.addEventListener("click", () => {
     const queryString = searchInput.value.toLowerCase();
@@ -373,21 +424,18 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Массив с путями страниц, на которых будет работать скрипт
   const allowedPages = [
     "/pages/administrator.html",
     "/pages/administratorEdit.html",
     "/pages/duty.html",
     "/pages/pastdutyreport.html",
-    "/test/pages/managerPage.html",
+    "/pages/managerPage.html",
     "/pages/manageDutyReport.html",
   ];
 
-  // Проверяем, находится ли пользователь на одной из разрешённых страниц
   if (allowedPages.includes(window.location.pathname)) {
     const logOutButton = document.querySelector(".log-out-button");
 
-    // Функция для создания меню выхода
     const createExitMenu = () => {
       const exitMenu = document.createElement("div");
       exitMenu.className = "owerflow-exit font-regular";
@@ -403,7 +451,6 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
       `;
 
-      // закрытие меню
       const closeButton = exitMenu.querySelector(".cross-exit");
       const cancelButton = exitMenu.querySelector(".exit-cancellation");
       const completeButton = exitMenu.querySelector(".exit-completed");
@@ -417,7 +464,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       completeButton.addEventListener("click", () => {
-        window.location.href = "../index.html"; // Перенаправление на вход
+        window.location.href = "../index.html";
       });
 
       return exitMenu;
@@ -432,10 +479,20 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  // if (window.location.pathname !== "index.html") {
-  //   return;
-  // }
+  const logOutButton = document.querySelector(".log-out-button");
+  const userNameSpan = logOutButton.querySelector(".user-name"); // Элемент для отображения имени пользователя
 
+  // Проверка на наличие текущего пользователя
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  if (currentUser && userNameSpan) {
+    // Обновляем текст кнопки с именем и первой буквой фамилии пользователя
+    userNameSpan.textContent = `${
+      currentUser.firstName
+    } ${currentUser.lastName.charAt(0)}.`; // Отображаем только первую букву фамилии
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("#form-sign-in");
   const errorMessageElement = document.querySelector(".error-message-log"); // Элемент для вывода ошибок
 
@@ -456,21 +513,21 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       if (user) {
+        // Сохраняем текущего пользователя в локальном хранилище
+        localStorage.setItem("currentUser", JSON.stringify(user));
+
+        // Перенаправление на соответствующую страницу
         switch (user.role) {
-          case "администратор":
+          case "Администратор":
             window.location.href = "pages/administrator.html";
             break;
-          case "главный администратор":
+          case "Главный администратор":
             window.location.href = "pages/managerPage.html";
             break;
-          case "сотрудник":
+          case "Сотрудник":
             window.location.href = "pages/duty.html";
             break;
           default:
-            if (errorMessageElement) {
-              errorMessageElement.textContent =
-                "Неизвестная роль пользователя.";
-            }
         }
       } else {
         if (storedUsers.length === 0) {
