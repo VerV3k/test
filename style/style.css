@@ -295,7 +295,7 @@ body {
     background-color: #4A606F;
     /* min-height: 814px; */
     min-height: 81.3vh;
-
+    /* box-shadow: 16px 0px 9px -7px rgba(0, 0, 0, 0.3); */
 }
 
 .dute__aside-block {
@@ -403,9 +403,7 @@ body {
     padding: 26px 0px 26px 0px;
 }
 
-.new {
-    color: #9D9D9D;
-}
+
 
 .date:hover {
     background-color: #ffffff;
@@ -442,17 +440,36 @@ body {
     border: none;
     background-color: #3A5664;
     box-shadow: 0px 0px 10px 0px rgba(34, 60, 80, 0.2);
+    cursor: pointer;
 }
 
-.button-block__with-quest {
-    display: flex;
+.button-block__in-dute-defolt button {
+    width: 254px;
+    height: 47px;
+    border-radius: 13px;
+    border: none;
+    background-color: #3A5664;
+    box-shadow: 0px 0px 10px 0px rgba(34, 60, 80, 0.2);
+    margin-bottom: 17px;
+    cursor: pointer
+}
 
+.button-block__with-quest-defolt {
+    display: flex;
+    margin: 0 auto;
+    margin-left: 550px;
 }
 
 .quest {
     padding-top: 11px;
     padding-left: 30px;
     margin-right: -60px;
+    cursor: pointer
+}
+
+
+.cursor-pointer {
+    cursor: pointer;
 }
 
 .completed {
@@ -463,14 +480,21 @@ body {
     background-size: 45px 45px;
 }
 
+.empty {
+    color: #9D9D9D;
+}
 
+.cursor-pointer {
+    cursor: pointer;
+}
 
-.scheduled {
+.future {
     background-image: url('../icons/EllipseYellow.png');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
     background-size: 45px 45px;
+    
 }
 
 .current {
@@ -498,6 +522,23 @@ body {
     background-repeat: no-repeat;
     background-size: 45px 45px;
 }
+
+.wait_start_date {
+    background-image: url('../icons/WaitStartDate.png');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-size: 45px 45px;
+}
+
+.wait_end_date {
+    background-image: url('../icons/WaitEndDate.png');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-size: 45px 45px;
+}
+
 
 .replaced-duty__dabl {
     padding: 10px 12px;
@@ -702,7 +743,7 @@ body {
     /* gap: 10px; */
     justify-content: space-around;
     margin-top: 20px;
-    
+
 }
 
 .button-del-container button {
@@ -746,7 +787,7 @@ body {
     /* gap: 10px; */
     justify-content: space-around;
     margin-top: 20px;
-    
+
 }
 
 .button-exit-container button {
@@ -772,6 +813,31 @@ body {
     cursor: pointer;
 }
 
+.notif-edit {
+    display: flex;
+    flex-direction: column;
+    background-color: #3A5664;
+    padding: 20px;
+    right: -350px;
+    top: 58%;
+    position: fixed;
+    width: 287px;
+    border-radius: 5px 0px 0px 5px;
+    gap: 20px;
+    transition: right 0.5s ease;
+}
+
+.cross-edit {
+    margin: 0 auto;
+    margin-right: 3%;
+    cursor: pointer;
+}
+
+.notif-edit.show {
+    display: flex; 
+    right: 0px;
+}
+
 .cross {
     margin: 0 auto;
     margin-right: 3%;
@@ -790,7 +856,7 @@ body {
     cursor: pointer;
 }
 
-.exit-completed{
+.exit-completed {
     margin: 0 auto;
     margin-right: 3%;
     cursor: pointer;
@@ -822,9 +888,9 @@ body {
     color: #7f2020;
 }
 
-.error-message-log{
+.error-message-log {
     margin-top: -30px;
-    color: #7f2020;
+    color: #d51313;
     width: 250px;
     padding-bottom: 20px;
 }
@@ -929,7 +995,8 @@ body {
     padding-bottom: 20px;
     padding-left: 32px;
 }
-.completed-chek{
+
+.completed-chek {
     display: flex;
     align-items: center;
 }
@@ -1145,8 +1212,15 @@ body {
 
 @media (max-width: 1397px) {
     .main {
-        padding-left: 10vw;
+        padding-left: 5vw;
+    }
 
+    .exit-container {
+        left: 33%;
+    }
+
+    .button-block__with-quest-defolt {
+        margin-right: 100px;
     }
 
     .main-history__duty {
@@ -1166,12 +1240,34 @@ body {
         gap: 100px;
     }
 
+    .new-button-block {
+        display: flex;
+        flex-direction: row;
+    }
 
 }
 
 @media (max-width: 1200px) {
     .main {
         padding-left: 8%;
+    }
+
+    .new-button-block {
+        display: flex;
+        flex-direction: column-reverse;
+    }
+
+    .in_button-block {
+        margin: 0 auto;
+
+    }
+
+    .exit-container {
+        left: 23%;
+    }
+
+    .button-block__with-quest-defolt {
+        margin-right: 0px;
     }
 
     .second-header__block {
@@ -1200,12 +1296,19 @@ body {
 
     .button-block__in-dute {
         gap: 55px;
-        margin-top: 60px;
-        margin-left: -80px;
+        /* margin-top: 60px; */
+        /* margin-left: -380px; */
     }
 
+    .button-block__in-dute-defolt {
+        gap: 55px;
+        /* margin-top: 60px; */
+        margin-left: -380px;
+    }
+
+
     .quest {
-        margin-left: -80px;
+        margin-right: 0px;
     }
 }
 
@@ -1214,6 +1317,14 @@ body {
         padding-left: 0%;
 
     }
+
+    .exit-container {
+        left: calc(50vw - 18vw);
+        top: 40%;
+        /* transition: left 0.1s; */
+    }
+
+
 
     .nav-number {
         width: 825px;
@@ -1311,6 +1422,13 @@ body {
 }
 
 @media (max-width: 831px) {
+    .exit-container {
+        left: calc(50vw - 23vw);
+        top: 40%;
+        /* transition: left 0.1s; */
+    }
+
+
 
     .main-history__duty,
     .open-graf,
@@ -1331,6 +1449,14 @@ body {
 }
 
 @media (max-width: 766px) {
+    .exit-container {
+        left: calc(50vw - 27vw);
+        top: 40%;
+        /* transition: left 0.1s; */
+    }
+
+
+
     .open-graf {
         flex-direction: column;
         padding-top: 10px;
@@ -1385,6 +1511,16 @@ body {
 }
 
 @media (max-width: 592px) {
+    .button-block__with-quest-defolt {
+        margin-left: 60px;
+    }
+
+    .exit-container {
+        left: calc(50vw - 32vw);
+        top: 40%;
+        /* transition: left 0.1s; */
+    }
+
     .dute__footer {
         padding-bottom: 10px;
     }
@@ -1394,7 +1530,7 @@ body {
     }
 
     .quest {
-        margin-left: 0px;
+        /* margin-left: 0px; */
         padding-top: 0px;
     }
 
@@ -1404,10 +1540,15 @@ body {
         margin-left: -0px;
     }
 
-    .button-block__in-dute {
+    /* .button-block__in-dute {
         gap: 55px;
         margin-top: 40px;
+    } */
 
+    .button-block__in-dute-defolt {
+        gap: 55px;
+        margin-top: 60px;
+        margin-left: -0px;
     }
 
     .notifications-block {
@@ -1477,6 +1618,11 @@ body {
     }
 
     .button-block__in-dute {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .button-block__in-dute-defolt {
         flex-direction: column;
         gap: 10px;
     }
@@ -1554,7 +1700,11 @@ body {
         align-items: center;
     }
 
-
+    .exit-container {
+        left: calc(50vw - 37vw);
+        top: 40%;
+        /* transition: left 0.1s; */
+    }
 
     .dute__aside {
         height: auto;
@@ -1575,6 +1725,7 @@ body {
 }
 
 @media (max-width: 462px) {
+
     .main-page__logo-blockh {
         margin-left: -25%;
     }
@@ -1588,7 +1739,11 @@ body {
     }
 
 
-
+    .exit-container {
+        left: calc(50vw - 43vw);
+        top: 40%;
+        /* transition: left 0.1s; */
+    }
 
     .dute__aside {
         height: auto;
@@ -1612,5 +1767,14 @@ body {
 
     .short-state {
         gap: none;
+    }
+}
+
+@media (max-width: 462px) {
+
+    .exit-container {
+        left: calc(50vw - 47vw);
+        top: 40%;
+        /* transition: left 0.1s; */
     }
 }
