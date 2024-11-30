@@ -18,6 +18,26 @@ if (
       ".owerflow-complitede"
     );
 
+    const getStoredUsers = () =>
+      JSON.parse(localStorage.getItem("users")) || [];
+
+    const saveUserData = (userData) => {
+      const storedUsers = getStoredUsers();
+
+      // Проверяем, существует ли пользователь с таким же логином
+      const userExists = storedUsers.some(
+        (user) => user.login === userData.login
+      );
+
+      if (!userExists) {
+        storedUsers.push(userData);
+        localStorage.setItem("users", JSON.stringify(storedUsers));
+        console.log("Пользователь добавлен:", userData);
+      } else {
+        console.log("Пользователь уже существует:", userData);
+      }
+    };
+
     const defaultEmployeeUser = {
       id: 1,
       firstName: "Виталий",
@@ -27,6 +47,8 @@ if (
       login: "verve",
       password: "mainadmin",
     };
+
+    saveUserData(defaultEmployeeUser);
 
     const notificationText = notificationContainer.querySelector(
       ".completed-chek span"
@@ -38,9 +60,6 @@ if (
     let message;
     let editMode = false;
     let currentUserId;
-
-    const getStoredUsers = () =>
-      JSON.parse(localStorage.getItem("users")) || [];
 
     const generateUniqueId = (storedUsers) => {
       let id;
@@ -87,10 +106,14 @@ if (
         const role = document.querySelector("#role").value.trim();
         const login = document.querySelector("#login").value.trim();
         const password = document.querySelector("#password").value.trim();
-
         const storedUsers = getStoredUsers();
 
-        if (storedUsers.some((user) => user.login === login && !editMode)) {
+        // Проверка уникальности логина
+        if (
+          storedUsers.some(
+            (user) => user.login === login && user.id !== currentUserId
+          )
+        ) {
           showError("loginError", "Логин должен быть уникальным.");
           return;
         }
@@ -102,7 +125,6 @@ if (
           );
           return;
         }
-
         if (!/^[а-яА-ЯёЁ]+$/.test(lastName)) {
           showError(
             "lastNameError",
@@ -171,14 +193,6 @@ if (
       });
     }
 
-    const saveUserData = (userData) => {
-      const storedUsers = getStoredUsers();
-      storedUsers.push(userData);
-      localStorage.setItem("users", JSON.stringify(storedUsers));
-    };
-
-    saveUserData(defaultEmployeeUser);
-
     const saveUpdatedUserData = (updatedUserData) => {
       let storedUsers = getStoredUsers();
       storedUsers = storedUsers.map((user) =>
@@ -199,7 +213,7 @@ if (
               <td>${userData.lastName}</td>
               <td>${userData.role}</td>
               <td>${userData.login}</td>
-              <td>${userData.password}</td>
+              <td>********</td>
               <td>${userData.phone}</td>
               ${
                 userData.role !== "Главный администратор"
@@ -358,18 +372,18 @@ if (
     }
 
     const validateLoginAndPassword = (login, password) => {
-      if (/^[а-яА-ЯёЁ]*$/.test(login)) {
+      if (/.*[а-яА-ЯёЁ].*/.test(login)) {
         return {
           isValid: false,
           errorElementId: "loginError",
-          errorMessage: "Логин не должен содержать русские буквы.",
+          errorMessage: "Логин не должен содержать русские символы.",
         };
       }
-      if (/^[а-яА-ЯёЁ]*$/.test(password)) {
+      if (/.*[а-яА-ЯёЁ].*/.test(password)) {
         return {
           isValid: false,
           errorElementId: "passwordError",
-          errorMessage: "Пароль не должен содержать русские буквы.",
+          errorMessage: "Пароль не должен содержать русские символы.",
         };
       }
       return { isValid: true };
@@ -580,6 +594,8 @@ if (titleTag.textContent === "График") {
 
     // Переменная для хранения статуса системы
     let systemStatus = "Запрос не возможен";
+    let firstDate = null; // Переменная для хранения выбранной даты
+    let secondDate = null;
 
     const firstDayOfMonth = new Date(year, month - 1, 1);
     const startDayIndex = firstDayOfMonth.getDay();
@@ -621,27 +637,46 @@ if (titleTag.textContent === "График") {
         schedules[year][month] = {};
       }
 
-      const halfSize = Math.ceil(storedUsers.length / 2);
-      const group1 = storedUsers.slice(0, halfSize);
-      const group2 = storedUsers.slice(halfSize);
+      // Фильтруем пользователей по роли "Сотрудник"
+      const employees = storedUsers.filter((user) => user.role === "Сотрудник");
 
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dateKey = `${String(year).padStart(4, "0")}-${String(
-          month
+      // Определяем текущую дату
+      const today = new Date();
+
+      // Определяем дату начала генерации расписания (через 2 дня)
+      const startDate = new Date(today);
+      startDate.setDate(today.getDate());
+
+      // Генерируем расписание на 14 дней
+      for (let i = 0; i < 14; i++) {
+        const scheduleDate = new Date(startDate);
+        scheduleDate.setDate(startDate.getDate() + i);
+        const day = scheduleDate.getDate();
+        const monthIndex = scheduleDate.getMonth() + 1; // Месяцы в JavaScript начинаются с 0
+        const yearIndex = scheduleDate.getFullYear();
+
+        const dateKey = `${String(yearIndex).padStart(4, "0")}-${String(
+          monthIndex
         ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-        if (!schedules[year][month][dateKey]) {
-          schedules[year][month][dateKey] = { user: {} };
+        if (!schedules[yearIndex]) {
+          schedules[yearIndex] = {};
+        }
+        if (!schedules[yearIndex][monthIndex]) {
+          schedules[yearIndex][monthIndex] = {};
         }
 
-        const scheduleDate = new Date(year, month - 1, day);
+        if (!schedules[yearIndex][monthIndex][dateKey]) {
+          schedules[yearIndex][monthIndex][dateKey] = { user: {} };
+        }
 
         let assignedGroup;
 
-        if ((day - 1) % 4 < 2) {
-          assignedGroup = group1;
+        // Чередуем группы каждые 4 дня
+        if (i % 4 < employees.length / 2) {
+          assignedGroup = employees.slice(0, Math.ceil(employees.length / 2));
         } else {
-          assignedGroup = group2;
+          assignedGroup = employees.slice(Math.ceil(employees.length / 2));
         }
 
         assignedGroup.forEach((user) => {
@@ -650,13 +685,15 @@ if (titleTag.textContent === "График") {
 
           if (scheduleDate.toDateString() === today.toDateString()) {
             if (currentHourMSK >= 8 && currentHourMSK < 20) {
+              // С 8:00 до 20:00
               userStatus = {
-                note: ["дежурство проходит без инцидентов"],
+                note: [],
                 status: "текущее",
               };
             } else if (currentHourMSK === 20 && today.getMinutes() >= 1) {
+              // После 20:01
               userStatus = {
-                note: ["дежурство прошло без инцидентов"],
+                note: [],
                 status: "выполненное",
               };
             } else {
@@ -664,27 +701,29 @@ if (titleTag.textContent === "График") {
             }
           } else if (scheduleDate < today) {
             userStatus = {
-              note: ["дежурство прошло без инцидентов"],
+              note: [],
               status: "выполненное",
             };
           } else {
             userStatus = { note: [], status: "будущее" };
           }
 
-          schedules[year][month][dateKey].user[user.id] = userStatus;
+          schedules[yearIndex][monthIndex][dateKey].user[user.id] = userStatus;
         });
       }
 
       localStorage.setItem("schedules", JSON.stringify(schedules));
     };
 
+    // Вызов функции для создания расписания
     assignUsersToWork();
 
     const highlightUserStatusInCalendar = () => {
       const currentUserStr = localStorage.getItem("currentUser");
       if (!currentUserStr) return;
 
-      const currentUserId = JSON.parse(currentUserStr).id;
+      const currentUser = JSON.parse(currentUserStr);
+      const currentUserId = currentUser.id;
 
       if (!currentUserId) return;
 
@@ -708,12 +747,23 @@ if (titleTag.textContent === "График") {
               switch (userSchedule.status) {
                 case "текущее":
                   dateElements[dateElementIndex].classList.add("current");
+                  console.log(`Добавлен класс 'current' для ${dateKey}`);
                   break;
                 case "выполненное":
                   dateElements[dateElementIndex].classList.add("completed");
+                  console.log(`Добавлен класс 'completed' для ${dateKey}`);
                   break;
                 case "будущее":
                   dateElements[dateElementIndex].classList.add("future");
+                  console.log(`Добавлен класс 'future' для ${dateKey}`);
+                  break;
+                case "wait_start_date": // Добавлено для нового статуса
+                  dateElements[dateElementIndex].classList.add(
+                    "wait_start_date"
+                  );
+                  console.log(
+                    `Добавлен класс 'wait_start_date' для ${dateKey}`
+                  );
                   break;
               }
             }
@@ -724,106 +774,134 @@ if (titleTag.textContent === "График") {
 
     highlightUserStatusInCalendar();
 
-    // Функция для установки классов на даты
-    const setDateClassesAndListeners = () => {
-      // Получаем расписание из localStorage
-      const schedules = JSON.parse(localStorage.getItem("schedules")) || {};
-
-      // Получаем текущего пользователя
+    // Функция для обновления статусов пользователей на wait_start_date
+    const updateUserStatusToWaitStartDate = () => {
       const currentUserStr = localStorage.getItem("currentUser");
       if (!currentUserStr) return;
 
-      const currentUserId = JSON.parse(currentUserStr).id;
+      const currentUser = JSON.parse(currentUserStr);
+      const currentUserId = currentUser.id;
 
-      // Массив для хранения выбранных дат
-      let selectedDatesObject = {};
+      if (!currentUserId) return;
 
-      // Получаем будущие даты из расписания
+      const schedules = JSON.parse(localStorage.getItem("schedules")) || {};
+      const waitData = JSON.parse(localStorage.getItem("wait")) || {};
+
+      // Создаем массив для хранения дат, которые не должны быть выбраны
+      const excludedDates = new Set();
+
+      // Проходим по объекту wait и добавляем даты в excludedDates
+      for (const dateKey in waitData) {
+        if (waitData.hasOwnProperty(dateKey)) {
+          const userData = waitData[dateKey].user;
+          if (userData.userId === currentUserId) {
+            excludedDates.add(userData.firstDate);
+            excludedDates.add(userData.secondDate);
+          }
+        }
+      }
+
+      if (!schedules[year] || !schedules[year][month]) return;
+
+      // Удаляем класс future у всех элементов с классом .date
+      const dateElements = document.querySelectorAll(".calendar .date");
+
+      dateElements.forEach((element) => {
+        // Проверяем, если дата находится в excludedDates
+        const dayNumber = parseInt(element.textContent, 10);
+        const dateKey = `${String(year).padStart(4, "0")}-${String(
+          month
+        ).padStart(2, "0")}-${String(dayNumber).padStart(2, "0")}`;
+
+        if (excludedDates.has(dateKey)) {
+          // Если дата исключена, оставляем только класс .date
+          element.classList.remove("wait_start_date-local");
+          element.classList.remove("wait_end_date-local");
+          element.classList.add("del-bgc"); // Удаляем класс future
+        } else {
+          // Если дата не исключена, просто удаляем класс future
+          element.classList.remove("future");
+        }
+      });
+
       for (let day = 1; day <= daysInMonth; day++) {
         const dateKey = `${String(year).padStart(4, "0")}-${String(
           month
         ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-        if (
-          schedules[year]?.[month]?.[dateKey]?.user[currentUserId]?.status ===
-          "будущее"
-        ) {
-          dateElements[day + dayOffset - 1].classList.add("wait_start_date");
+        if (schedules[year][month][dateKey]) {
+          const userSchedule =
+            schedules[year][month][dateKey].user[currentUserId];
 
-          // Обработка клика на дату с классом wait_start_date
-          dateElements[day + dayOffset - 1].addEventListener("click", () => {
-            // Сохраняем выбранную дату
-            selectedDatesObject.startDate = dateKey;
+          // Проверяем, есть ли дата в excludedDates
+          if (excludedDates.has(dateKey)) {
+            continue; // Пропускаем эту дату
+          }
 
-            // Убираем класс future и добавляем класс selected_start_date
-            for (let el of dateElements) el.classList.remove("future");
-            dateElements[day + dayOffset - 1].classList.remove(
-              "wait_start_date"
-            );
-            dateElements[day + dayOffset - 1].classList.add(
-              "selected_start_date"
-            );
+          if (userSchedule && userSchedule.status === "будущее") {
+            userSchedule.status = "wait_start_date"; // Изменяем статус
+            // Обновляем localStorage
+            schedules[year][month][dateKey].user[currentUserId] = userSchedule;
+          }
+        }
+      }
 
-            // Подсвечиваем доступные даты для wait_end_date
-            for (
-              let nextDayIndex = day + 1;
-              nextDayIndex <= daysInMonth;
-              nextDayIndex++
+      localStorage.setItem("schedules", JSON.stringify(schedules));
+    };
+
+    // Функция для сброса классов wait_start_date на future
+    const resetWaitStartDateToFutureClassesOnlyIfSystemStatusIsNotPossible =
+      () => {
+        if (systemStatus === "Запрос не возможен") {
+          // Проверка статуса системы
+          dateElements.forEach((dateElement) => {
+            const dateKey = `${year}-${String(month).padStart(2, "0")}-${String(
+              dateElement.textContent
+            ).padStart(2, "0")}`;
+
+            firstDate = null;
+            secondDate = null;
+            // Проверяем, если firstDate не null и совпадает с текущей датой
+            if (
+              dateElement.classList.contains("wait_start_date") &&
+              firstDate !== dateKey
             ) {
-              const nextDateKey = `${String(year).padStart(4, "0")}-${String(
-                month
-              ).padStart(2, "0")}-${String(nextDayIndex).padStart(2, "0")}`;
-
-              if (!schedules[year]?.[month]?.[nextDateKey]) continue;
-
-              // Добавляем класс wait_end_date
-              dateElements[nextDayIndex + dayOffset - 1].classList.add(
-                "wait_end_date"
+              dateElement.classList.remove("wait_start_date"); // Убираем класс wait_start_date
+              dateElement.classList.add("future"); // Добавляем класс future
+              console.log(
+                `Класс 'wait_start_date' заменен на 'future' для даты ${dateElement.textContent}`
               );
+            }
 
-              // Обработка клика на дату с классом wait_end_date
-              dateElements[nextDayIndex + dayOffset - 1].addEventListener(
-                "click",
-                () => {
-                  selectedDatesObject.endDate = nextDateKey;
-
-                  console.log(
-                    `Выбрана стартовая дата: ${selectedDatesObject.startDate}`
-                  );
-                  console.log(
-                    `Выбрана конечная дата: ${selectedDatesObject.endDate}`
-                  );
-
-                  // Очищаем классы после выбора
-                  for (let el of dateElements)
-                    el.classList.remove("wait_end_date", "selected_start_date");
-                }
+            // Сбрасываем класс wait_end_date
+            if (dateElement.classList.contains("wait_end_date")) {
+              dateElement.classList.remove("wait_end_date"); // Убираем класс wait_end_date
+              console.log(
+                `Класс 'wait_end_date' заменен на 'future' для даты ${dateElement.textContent}`
               );
             }
           });
         }
-      }
-    };
-
-    // Вызов функции подсветки только если статус системы "Запрос возможен"
-    document.querySelector(".edit-btn").addEventListener("click", () => {
-      systemStatus = "Запрос возможен";
-
-      // После изменения статуса вызываем функцию для подсветки дат
-      setDateClassesAndListeners();
-
-      console.log(systemStatus);
-    });
+      };
 
     // Переключение видимости блоков с кнопками при нажатии на кнопки.
 
     const editButtonBlockDefault = document.querySelector(
       ".button-block__with-quest-defolt"
     );
-
     const newButtonBlock = document.querySelector(".new-button-block");
 
     document.querySelector(".edit-btn").addEventListener("click", () => {
+      // Меняем статус системы на "Запрос возможен"
+      systemStatus = "Запрос возможен";
+      console.log(systemStatus);
+
+      // Обновляем статусы пользователей
+      updateUserStatusToWaitStartDate();
+
+      // Обновляем отображение в календаре
+      highlightUserStatusInCalendar(); // Снова вызываем для отражения изменений
+
       editButtonBlockDefault.style.display = "none";
       newButtonBlock.style.display = "flex";
 
@@ -836,7 +914,7 @@ if (titleTag.textContent === "График") {
       setTimeout(() => {
         notificationBlock.classList.remove("show");
         setTimeout(() => {
-          notificationBlock.style.display = "none";
+          notificationBlock.style.display = "flex";
         }, 500);
       }, 3000);
     });
@@ -845,17 +923,499 @@ if (titleTag.textContent === "График") {
       editButtonBlockDefault.style.display = "flex";
       newButtonBlock.style.display = "none";
 
+      highlightUserStatusInCalendar();
+      displayUserDatesFromLocalStorage();
       const notificationBlock = document.querySelector(".notif-edit");
 
       notificationBlock.classList.remove("show");
 
       setTimeout(() => {
-        notificationBlock.style.display = "none";
+        notificationBlock.style.display = "flex";
       }, 500);
 
+      // Меняем статус системы обратно на "Запрос не возможен"
       systemStatus = "Запрос не возможен";
 
+      resetWaitStartDateToFutureClassesOnlyIfSystemStatusIsNotPossible();
+      // Сбрасываем клики
+      firstDate = null;
+      secondDate = null;
+      console.log(firstDate);
       console.log(systemStatus);
+    });
+
+    // Добавляем обработчик событий для дат с классом wait_start_date
+    dateElements.forEach((dateElement) => {
+      dateElement.addEventListener("click", () => {
+        if (dateElement.classList.contains("wait_start_date")) {
+          firstDate = `${year}-${String(month).padStart(
+            2,
+            "0"
+          )}-${dateElement.textContent.padStart(2, "0")}`;
+          console.log(`Выбрана дата: ${firstDate}`);
+          // Здесь можно добавить дополнительную логику обработки выбранной даты
+
+          // Сбрасываем классы wait_start_date на future, кроме firstDate
+          resetWaitStartDateToFutureClasses();
+        }
+      });
+    });
+
+    // Функция для сброса классов wait_start_date на future
+    // Добавляем обработчик событий для дат с классом wait_start_date
+
+    dateElements.forEach((dateElement) => {
+      dateElement.addEventListener("click", () => {
+        if (dateElement.classList.contains("wait_start_date")) {
+          // Сохраняем первую дату
+          firstDate = `${year}-${String(month).padStart(
+            2,
+            "0"
+          )}-${dateElement.textContent.padStart(2, "0")}`;
+          console.log(`Выбрана первая дата: ${firstDate}`);
+
+          // Сбрасываем классы wait_start_date на future, кроме firstDate
+          resetWaitStartDateToFutureClasses();
+        } else if (dateElement.classList.contains("wait_end_date")) {
+          // Сохраняем вторую дату
+          secondDate = `${year}-${String(month).padStart(
+            2,
+            "0"
+          )}-${dateElement.textContent.padStart(2, "0")}`;
+          console.log(`Выбрана вторая дата: ${secondDate}`);
+
+          // Убираем классы wait_end_date и future для выбранной даты
+          dateElement.classList.add("wait_end_date");
+          dateElement.classList.remove("future");
+
+          // Сбрасываем все остальные wait_end_date на future, кроме secondDate
+          resetWaitEndDates();
+        }
+      });
+    });
+
+    const resetWaitEndDates = () => {
+      dateElements.forEach((dateElement) => {
+        const dateKey = `${year}-${String(month).padStart(2, "0")}-${String(
+          dateElement.textContent
+        ).padStart(2, "0")}`;
+
+        // Проверяем, если secondDate не null и совпадает с текущей датой
+        if (
+          dateElement.classList.contains("wait_end_date") &&
+          secondDate !== dateKey
+        ) {
+          dateElement.classList.remove("wait_end_date"); // Убираем класс wait_end_date
+          dateElement.classList.remove("future"); // Добавляем класс future
+        }
+      });
+    };
+
+    // Функция для сброса классов wait_start_date на future
+    const resetWaitStartDateToFutureClasses = () => {
+      dateElements.forEach((dateElement) => {
+        const dateKey = `${year}-${String(month).padStart(2, "0")}-${String(
+          dateElement.textContent
+        ).padStart(2, "0")}`;
+
+        // Проверяем, если firstDate не null и совпадает с текущей датой
+        if (
+          dateElement.classList.contains("wait_start_date") &&
+          firstDate !== dateKey
+        ) {
+          dateElement.classList.remove("wait_start_date"); // Убираем класс wait_start_date
+          dateElement.classList.remove("future"); // Убираем класс future
+          console.log(
+            `Класс 'wait_start_date' заменен на 'future' для даты ${dateElement.textContent}`
+          );
+
+          // Проверка на наличие даты в графике дежурств текущего пользователя
+          const schedules = JSON.parse(localStorage.getItem("schedules")) || {};
+          const currentUserStr = localStorage.getItem("currentUser");
+
+          if (currentUserStr) {
+            const currentUser = JSON.parse(currentUserStr);
+            const currentUserId = currentUser.id;
+
+            console.log("Текущий пользователь:", currentUser);
+            console.log("ID текущего пользователя:", currentUserId);
+
+            // Проверяем наличие расписания для текущего года и месяца
+            if (!schedules[year]) {
+              console.log(`Нет расписания для года ${year}`);
+              return;
+            }
+            if (!schedules[year][month]) {
+              console.log(`Нет расписания для месяца ${month}`);
+              return;
+            }
+
+            const today = new Date(); // Определяем текущую дату
+            const fourteenDaysFromNow = new Date(today);
+            fourteenDaysFromNow.setDate(today.getDate() + 14); // Определяем дату через 14 дней
+
+            dateElements.forEach((dateElement) => {
+              const day = parseInt(dateElement.textContent, 10); // Получаем день из элемента
+              const dateKey = `${year}-${String(month).padStart(
+                2,
+                "0"
+              )}-${String(day).padStart(2, "0")}`;
+              const userSchedule = schedules[year][month][dateKey];
+
+              // Логируем информацию о расписании
+              console.log(`Расписание на ${dateKey}:`, userSchedule);
+
+              // Проверяем, является ли дата в пределах 14 дней
+              const scheduleDate = new Date(year, month - 1, day); // Создаем объект даты для сравнения
+
+              if (scheduleDate > fourteenDaysFromNow) {
+                console.log(
+                  `Дата ${dateKey} превышает предел в 14 дней и будет пропущена.`
+                );
+                return; // Пропускаем эту дату
+              }
+
+              // Проверяем наличие пользователя в расписании и класс .empty
+              if (
+                !dateElement.classList.contains("empty") &&
+                (!userSchedule ||
+                  !userSchedule.user ||
+                  !userSchedule.user[currentUserId])
+              ) {
+                // Если дата отсутствует в графике дежурств и не является пустой, добавляем класс wait_end_date
+                dateElement.classList.add("wait_end_date");
+                console.log(
+                  `Класс 'wait_end_date' добавлен для даты ${dateElement.textContent}`
+                );
+              } else {
+                console.log(
+                  `Пользователь ${currentUserId} найден в расписании на ${dateKey} или дата пустая.`
+                );
+              }
+            });
+          } else {
+            console.log("Текущий пользователь не найден в localStorage.");
+          }
+        }
+      });
+    };
+
+    const submitButton = document.querySelector(".submit-btn");
+
+    // Добавляем обработчик события на кнопку
+    submitButton.addEventListener("click", () => {
+      // Проверяем, равны ли firstDate и secondDate null
+      if (firstDate === null || secondDate === null) {
+        // Вызываем функцию для отображения уведомления
+        const notificationBlock = document.querySelector(".notif-edit");
+
+        notificationBlock.classList.add("show");
+        notificationBlock.style.display = "flex";
+
+        setTimeout(() => {
+          notificationBlock.classList.remove("show");
+          setTimeout(() => {
+            notificationBlock.style.display = "flex";
+          }, 500);
+        }, 3000);
+
+        return; // Прерываем выполнение функции, не меняя статус системы
+      }
+
+      // Проверяем, заполнены ли обе даты
+      if (firstDate !== null && secondDate !== null) {
+        // Получаем текущего пользователя из localStorage
+        const currentUserStr = localStorage.getItem("currentUser");
+        let currentUserId = null;
+
+        if (currentUserStr) {
+          const currentUser = JSON.parse(currentUserStr);
+          currentUserId = currentUser.id;
+        }
+
+        // Создаем объект wait с уникальной датой запроса
+        const now = new Date();
+        const requestDateKey = `${
+          now.getMonth() + 1
+        }-${now.getDate()}-${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}`;
+        // Получаем существующий объект wait из localStorage или создаем новый
+        const waitData = JSON.parse(localStorage.getItem("wait")) || {};
+
+        // Добавляем новую запись с текущей датой запроса
+        waitData[requestDateKey] = {
+          user: {
+            userId: currentUserId,
+            firstDate: firstDate,
+            secondDate: secondDate,
+          },
+          replacedUserId: null,
+          statusWait: "ожидание",
+        };
+
+        // Сохраняем обновленный объект wait в localStorage
+        localStorage.setItem("wait", JSON.stringify(waitData));
+
+        // Меняем статус системы на "Запрос отправлен"
+        systemStatus = "Запрос отправлен";
+        console.log(`Статус системы изменен на: ${systemStatus}`);
+        showCompletionWindow();
+      }
+    });
+    const showCompletionWindow = () => {
+      const completionWindow = document.createElement("div");
+      completionWindow.className = "owerflow-complitede";
+      completionWindow.style.display = "flex";
+      completionWindow.innerHTML = `
+          <div class="completed-wrapper font-regular-menu">
+              <span class="exit-completed"><img src="../icons/krest.svg" alt="cross"></span>
+              <div class="completed-chek" style="gap: 30px">
+                  <span>Запрос отправлен</span>
+                  <span><img src="../icons/checkbox.svg" alt=""></span>
+              </div>
+          </div>
+      `;
+
+      // Находим элемент, куда будем добавлять окно
+      const calendarBlock = document.querySelector(".calendar-block");
+
+      // Добавляем окно в указанный элемент
+      calendarBlock.appendChild(completionWindow);
+
+      // Добавляем обработчик события для закрытия окна по клику на крестик
+      const exitButton = completionWindow.querySelector(".exit-completed");
+      exitButton.addEventListener("click", () => {
+        calendarBlock.removeChild(completionWindow);
+        systemStatus = "Запрос не возможен"; // Возвращаем статус системы
+        newButtonBlock.style.display = "none";
+        editButtonBlockDefault.style.display = "flex";
+        location.reload();
+      });
+
+      // Удаляем окно через 3 секунды, если не закрыто вручную
+      setTimeout(() => {
+        if (document.body.contains(completionWindow)) {
+          calendarBlock.removeChild(completionWindow);
+          systemStatus = "Запрос не возможен"; // Возвращаем статус системы
+          console.log(`Статус системы изменен на: ${systemStatus}`);
+          newButtonBlock.style.display = "none";
+          editButtonBlockDefault.style.display = "flex";
+          location.reload();
+        }
+      }, 3000);
+    };
+
+    const displayUserDatesFromLocalStorage = () => {
+      // Получаем текущего пользователя из localStorage
+      const currentUserStr = localStorage.getItem("currentUser");
+      let currentUserId = null;
+
+      if (currentUserStr) {
+        const currentUser = JSON.parse(currentUserStr);
+        currentUserId = currentUser.id; // Предполагаем, что id пользователя хранится в поле id
+      }
+
+      // Извлекаем объект wait из localStorage
+      const waitData = JSON.parse(localStorage.getItem("wait"));
+
+      // Проверяем, существует ли waitData
+      if (waitData && currentUserId !== null) {
+        // Проходим по всем записям в waitData
+        for (const dateKey in waitData) {
+          if (waitData.hasOwnProperty(dateKey)) {
+            const userData = waitData[dateKey].user;
+
+            // Проверяем, соответствует ли userId текущему пользователю
+            if (userData.userId === currentUserId) {
+              const firstDate = userData.firstDate; // "2024-12-26"
+              const secondDate = userData.secondDate; // "2024-12-27"
+
+              // Преобразуем даты в формат DD для поиска элементов
+              const firstDateDay = new Date(firstDate).getDate(); // Получаем день месяца
+              const secondDateDay = new Date(secondDate).getDate(); // Получаем день месяца
+
+              // Находим все элементы с классом .date
+              const dateElements = document.querySelectorAll(".calendar .date");
+
+              dateElements.forEach((dateElement) => {
+                const dayNumber = parseInt(dateElement.textContent, 10); // Получаем текстовое содержание элемента
+
+                // Проверяем наличие класса empty
+                if (!dateElement.classList.contains("empty")) {
+                  // Добавляем классы для отображения статусов
+                  if (dayNumber === firstDateDay) {
+                    dateElement.classList.add("wait_start_date-local");
+                    dateElement.classList.remove("del-bgc"); // Удаляем класс для первой даты
+                  } else if (dayNumber === secondDateDay) {
+                    dateElement.classList.add("wait_end_date-local");
+                    dateElement.classList.remove("del-bgc"); // Удаляем класс для второй даты
+                  }
+                }
+              });
+            }
+          }
+        }
+      } else {
+        console.warn("Нет данных о пользователе или объект wait не найден.");
+      }
+    };
+    // Вызов функции для отображения дат при загрузке страницы или в нужный момент
+    displayUserDatesFromLocalStorage();
+
+    const removeCurrentDateFromWait = () => {
+      const currentUserStr = localStorage.getItem("currentUser");
+      let currentUserId = null;
+
+      if (currentUserStr) {
+        const currentUser = JSON.parse(currentUserStr);
+        currentUserId = currentUser.id; // Предполагаем, что id пользователя хранится в поле id
+      }
+
+      // Получаем текущую дату в формате YYYY-MM-DD
+      const today = new Date();
+      const todayKey = today.toISOString().split("T")[0]; // Форматируем дату
+
+      // Извлекаем объект wait из localStorage
+      const waitData = JSON.parse(localStorage.getItem("wait")) || {};
+
+      // Проверяем, существует ли waitData и текущий пользователь
+      if (waitData && currentUserId !== null) {
+        for (const dateKey in waitData) {
+          if (waitData.hasOwnProperty(dateKey)) {
+            const userData = waitData[dateKey].user;
+
+            // Проверяем, соответствует ли userId текущему пользователю
+            if (userData.userId === currentUserId) {
+              // Если дата совпадает с текущей
+              if (dateKey === todayKey) {
+                delete waitData[dateKey]; // Удаляем объект с этой датой
+                console.log(
+                  `Объект с датой ${todayKey} удален из wait для пользователя ${currentUserId}.`
+                );
+              }
+            }
+          }
+        }
+
+        // Обновляем localStorage с новым объектом wait
+        localStorage.setItem("wait", JSON.stringify(waitData));
+      } else {
+        console.warn("Нет данных о пользователе или объект wait не найден.");
+      }
+    };
+
+    // Вызов функции для удаления текущей даты из wait
+    removeCurrentDateFromWait();
+
+    const addRecordNode = document.querySelector(".node");
+    const overflowNode = document.querySelector(".owerflow-node");
+    const crossIcon = document.querySelector(".cross");
+    const form = document.querySelector(".add-user-form");
+    const inputField = document.querySelector(".node-input");
+    let records = []; // Массив для хранения записей
+
+    // Получаем текущего пользователя из localStorage
+    const currentUserStr = localStorage.getItem("currentUser");
+    let currentUserId = null;
+
+    if (currentUserStr) {
+      const currentUser = JSON.parse(currentUserStr);
+      currentUserId = currentUser.id; // Предполагаем, что id пользователя хранится в поле id
+    }
+
+    // Проверяем статус текущего пользователя в расписании
+    const schedules = JSON.parse(localStorage.getItem("schedules")) || {};
+    let isCurrentStatus = false;
+
+    for (const year in schedules) {
+      for (const month in schedules[year]) {
+        for (const dateKey in schedules[year][month]) {
+          const userSchedule =
+            schedules[year][month][dateKey].user[currentUserId];
+          if (userSchedule && userSchedule.status === "текущее") {
+            isCurrentStatus = true;
+            break; // Выход из цикла, если найден статус "текущее"
+          }
+        }
+        if (isCurrentStatus) break; // Выход из цикла по месяцам
+      }
+      if (isCurrentStatus) break; // Выход из цикла по годам
+    }
+
+    // Обработчик клика по "Добавить запись"
+    addRecordNode.addEventListener("click", () => {
+      if (isCurrentStatus) {
+        overflowNode.style.display = "block"; // Показываем блок с формой
+        inputField.value = ""; // Очищаем поле ввода
+        inputField.focus(); // Устанавливаем фокус на поле ввода
+      } else {
+        // Создаем окно с предупреждением
+        const completionWindow = document.createElement("div");
+        completionWindow.className = "owerflow-complitede";
+        completionWindow.style.display = "flex";
+        completionWindow.innerHTML = `
+                <div class="completed-wrapper font-regular-menu">
+                    <span class="exit-completed"><img src="../icons/krest.svg" alt="cross"></span>
+                    <div class="completed-chek" style="gap: 30px">
+                        <span>Для добавления записи необходимо быть на дежурстве</span>
+                    </div>
+                </div>
+            `;
+
+        // Находим элемент, куда будем добавлять окно
+        const calendarBlock = document.querySelector(".calendar-block");
+
+        // Добавляем окно в указанный элемент
+        calendarBlock.appendChild(completionWindow);
+
+        // Обработчик закрытия окна
+        const exitCompletedButton =
+          completionWindow.querySelector(".exit-completed");
+        exitCompletedButton.addEventListener("click", () => {
+          calendarBlock.removeChild(completionWindow); // Удаляем окно при закрытии
+        });
+      }
+    });
+
+    // Обработчик клика по иконке "cross"
+    crossIcon.addEventListener("click", () => {
+      overflowNode.style.display = "none"; // Скрываем блок с формой
+    });
+
+    // Обработчик отправки формы
+    form.addEventListener("submit", (event) => {
+      event.preventDefault(); // Предотвращаем стандартное поведение формы
+
+      const inputValue = inputField.value.trim(); // Получаем значение из поля ввода
+
+      if (inputValue) {
+        records.push(inputValue); // Добавляем запись в массив
+        console.log("Запись добавлена:", inputValue);
+        console.log("Все записи:", records);
+
+        // Создаем новый объект для хранения записей в localStorage
+        const notesData = JSON.parse(localStorage.getItem("notesData")) || {};
+
+        const today = new Date();
+        const todayKey = today.toISOString().split("T")[0]; // Форматируем дату как YYYY-MM-DD
+
+        if (!notesData[todayKey]) {
+          notesData[todayKey] = { user: {} }; // Инициализируем объект для текущей даты, если его нет
+        }
+
+        if (!notesData[todayKey].user[currentUserId]) {
+          notesData[todayKey].user[currentUserId] = { note: [] }; // Инициализируем объект для пользователя, если его нет
+        }
+
+        notesData[todayKey].user[currentUserId].note.push(inputValue); // Добавляем запись в массив note
+
+        localStorage.setItem("notesData", JSON.stringify(notesData)); // Обновляем localStorage
+
+        // Очищаем поле ввода и скрываем форму после добавления записи
+        inputField.value = "";
+        overflowNode.style.display = "none";
+      } else {
+        alert("Пожалуйста, введите подробности об инциденте."); // Предупреждение, если поле пустое
+      }
     });
   });
 }
