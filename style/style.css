@@ -601,6 +601,71 @@ body {
     border-radius: 5px;
 }
 
+.user-form-container-edit{
+    display: flex;
+    flex-direction: column;
+    background-color: #ADBFC3;
+    padding: 20px;
+    left: calc(50vw - 8vw);
+    top: 24%;
+    position: absolute;
+    width: 389px;
+    /* height: 456px; */
+    margin-bottom: 26px;
+    border-radius: 2px;
+}
+
+.edit-user-form{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding-top: 26px;
+}
+
+.input-container-edit {
+    display: flex;
+    flex-direction: row;
+    /* gap: 16px; */
+}
+
+.edit-input{
+    height: 100px;
+    resize: none;
+    border: none;
+    border-radius: 5px;
+    width: 300px;
+    font-size: 14px;
+    padding-left: 5px;
+    padding-top: 5px;
+}
+
+.edit-button-acc{
+    width: 264px;
+    height: 47px;
+    border-radius: 13px;
+    border: none;
+    background-color: #3A5664;
+    box-shadow: 0px 0px 10px 0px rgba(34, 60, 80, 0.2);
+    /* margin-right: 23px; */
+    margin: 0 auto;
+    /* margin-left: 30px; */
+    margin-top: 26px;
+    cursor: pointer;
+}
+
+
+
+.owerflow-edit{
+    display: none;
+    width: 1920px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 5px;
+}
+
 .node-input{
     height: 100px;
     resize: none;
@@ -989,7 +1054,6 @@ body {
     display: flex;
     flex-direction: column;
     /* gap: 16px; */
-
 }
 
 .input-container input {

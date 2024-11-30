@@ -1419,3 +1419,75 @@ if (titleTag.textContent === "График") {
     });
   });
 }
+
+if (titleTag.textContent === "Страница администратора Редактирование графика") {
+  // Шаг 1: Извлечение данных из localStorage
+  const waitData = JSON.parse(localStorage.getItem("wait"));
+  const usersData = JSON.parse(localStorage.getItem("users"));
+
+  // Функция для форматирования даты
+  function formatDate(dateString) {
+    const options = { day: "numeric", month: "long" }; // Форматируем как "11 ноября"
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ru-RU", options);
+  }
+
+  // Шаг 2: Проверка наличия данных
+  if (waitData && usersData) {
+    // Проходим по всем записям в waitData
+    for (const key in waitData) {
+      if (waitData.hasOwnProperty(key)) {
+        const entry = waitData[key];
+
+        // Проверяем статус записи
+        if (entry.statusWait === "ожидание") {
+          const userId = entry.user.userId; // Получаем userId
+          const firstDate = formatDate(entry.user.firstDate); // Форматируем первую дату
+          const secondDate = formatDate(entry.user.secondDate); // Форматируем вторую дату
+
+          // Находим пользователя по userId в массиве usersData
+          const user = usersData.find((u) => u.id === userId);
+          if (user) {
+            const firstName = user.firstName;
+            const lastName = user.lastName;
+
+            // Форматируем имя и фамилию как "Фамилия И."
+            const formattedName = `${lastName} ${firstName.charAt(0)}.`;
+
+            // Шаг 3: Создание динамического элемента
+            const editBlock = document.createElement("div");
+            editBlock.classList.add("edit");
+
+            editBlock.innerHTML = `
+                          <div class="edit-block font-regular-white">
+                              <div class="edit-request">Запрос на изменение графика от:</div>
+                              <div class="name-user">
+                                  <span class="formatted-name">${formattedName}</span>
+                                  <span class="first-date">заменить дежурство ${firstDate} на </span>
+                                  <span class="second-date">${secondDate}</span>
+                              </div>
+                          </div>
+                          <div>
+                              <button class="edit-block-button font-bold">Внести изменения</button>
+                          </div>
+                      `;
+
+            // Шаг 4: Добавление элемента в DOM
+            const mainAdmin = document.querySelector(".main-admin");
+            if (mainAdmin) {
+              mainAdmin.appendChild(editBlock);
+            }
+          } else {
+            console.error(
+              `Пользователь с ID ${userId} не найден в массиве users.`
+            );
+          }
+        }
+      }
+    }
+  } else {
+    console.error(
+      "Не удалось извлечь данные из localStorage. Проверьте наличие объектов 'wait' и 'users'."
+    );
+  }
+}

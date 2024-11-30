@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Страница администратора</title>
+    <title>Страница администратора Редактирование графика</title>
     <link rel="stylesheet" href="../style/reset.css">
     <link rel="stylesheet" href="../style/normalize.css">
     <link rel="stylesheet" href="../style/style.css">
@@ -28,8 +28,8 @@
                         <li><a href="" class="link active">Отчет дежурств</a></li>
                     </div>
                     <div class="log-out-button__block ">
-                        <button class="log-out-button font-bold-white"><img src="../icons/exit.svg"
-                                alt="выход "><span class="user-name">Владислав Ш.</span></button>
+                        <button class="log-out-button font-bold-white"><img src="../icons/exit.svg" alt="выход "><span
+                                class="user-name">Владислав Ш.</span></button>
                     </div>
                 </div>
             </header>
@@ -45,31 +45,46 @@
                             <div class="notifications">
                                 <span>Заменено дежурство на 14 октября </span>
                                 <span>Заменено дежурство на 13 октября </span>
+                                <!-- <span>Заменено дежурство на 14 октября </span>
+                                <span>Заменено дежурство на 13 октября </span>
+                                <span>Заменено дежурство на 14 октября </span>
+                                <span>Заменено дежурство на 13 октября </span>
+                                <span>Заменено дежурство на 14 октября </span>
+                                <span>Заменено дежурство на 13 октября </span>
+                                <span>Заменено дежурство на 14 октября </span>
+                                <span>Заменено дежурство на 13 октября </span>
+                                <span>Заменено дежурство на 14 октября </span> -->
                             </div>
                         </div>
                     </div>
                 </aside>
                 <main class="main-admin font-regular">
-                    <div class="edit">
+                    <!-- 
 
+                    <div class="edit">
                         <div class="edit-block font-regular-white">
                             <div class="edit-request ">Запрос на изменение графика от:</div>
-                            <div>Александр Ц. на 13 октября</div>
-
+                            <div class="name-user"><span class="first-date"></span><span class="second-date"></span>
+                            </div>
                         </div>
                         <div>
-                            <button class="edit-block-button font-bold">Выбрать дату для замены</button>
+                            <button class="edit-block-button font-bold">Внести изменения </button>
                         </div>
                     </div>
-                    <div class="edit">
+                    <span>Запросов нет</span> -->
 
-                        <div class="edit-block font-regular-white">
-                            <div class="edit-request ">Запрос на изменение графика от:</div>
-                            <div>Александр Ц. на 13 октября</div>
-
-                        </div>
-                        <div>
-                            <button class="edit-block-button font-bold">Выбрать дату для замены</button>
+                    <div class="owerflow-edit" style="display: block;">
+                        <div class="user-form-container-edit">
+                            <span class="cross"><img src="../icons/krest.svg" alt="cross"></span>
+                            <span class="font-regular position-text-node ">Изменение графика на<span
+                                    class="now-date"></span></span>
+                            <form class="add-user-form font-bold">
+                                <div class="input-container">
+                                    <input name="edit-input" id="" class="edit-input">
+                                    <button type="submit" class="edit-button-acc font-medium-white">Добавить
+                                        запись</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </main>
@@ -83,7 +98,7 @@
                     </div>
                 </div>
                 <div>
-                    <li><a href="" class="link">Вопрос руководству</a>
+                    <!-- <li><a href="" class="link">Вопрос руководству</a> -->
                 </div>
         </div>
         </footer>
