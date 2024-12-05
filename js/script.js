@@ -1,6 +1,209 @@
 let titleTag = document.querySelector("head title");
 console.log(titleTag.textContent);
 
+const defaultEmployeeUser = [
+  {
+    id: 1,
+    firstName: "Виталий",
+    lastName: "Галенко",
+    phone: "+7 (977) 549-79-73",
+    role: "Главный администратор",
+    login: "verve",
+    password: "mainadmin",
+  },
+  {
+    id: 253,
+    firstName: "Сотрудник",
+    lastName: "Первый",
+    phone: "+7 (111) 111-11-11",
+    role: "Сотрудник",
+    login: "111",
+    password: "111",
+  },
+  {
+    id: 538,
+    firstName: "Сотрудник",
+    lastName: "Второй",
+    phone: "+7 (222) 222-22-22",
+    role: "Сотрудник",
+    login: "222",
+    password: "222",
+  },
+  {
+    id: 404,
+    firstName: "Сотрудник",
+    lastName: "Третий",
+    phone: "+7 (333) 333-33-33",
+    role: "Сотрудник",
+    login: "333",
+    password: "333",
+  },
+  {
+    id: 470,
+    firstName: "Сотрудник",
+    lastName: "Четвертый",
+    phone: "+7 (444) 444-44-44",
+    role: "Сотрудник",
+    login: "444",
+    password: "444",
+  },
+];
+
+const saveUsersToLocalStorage = (users) => {
+  const existingUsersJSON = localStorage.getItem("users");
+
+  const existingUsers = existingUsersJSON ? JSON.parse(existingUsersJSON) : [];
+
+  const uniqueUsers = users.filter(
+    (newUser) =>
+      !existingUsers.some((existingUser) => existingUser.id === newUser.id)
+  );
+
+  if (uniqueUsers.length > 0) {
+    const allUsers = [...existingUsers, ...uniqueUsers];
+    localStorage.setItem("users", JSON.stringify(allUsers));
+    console.log("Пользователи успешно сохранены в localStorage.");
+  } else {
+    console.log(
+      "Все пользователи уже существуют в localStorage и не будут перезаписаны."
+    );
+  }
+};
+
+saveUsersToLocalStorage(defaultEmployeeUser);
+
+console.log(JSON.parse(localStorage.getItem("users")));
+
+// ---------------------------------------------------------------
+
+const generateScheduleIfNeeded = (users, year) => {
+  const schedules = JSON.parse(localStorage.getItem("schedules")) || {};
+
+  const monthsToCheck = [10, 11];
+  let needsGeneration = false;
+
+  monthsToCheck.forEach((month) => {
+    if (!schedules[year] || !schedules[year][month]) {
+      needsGeneration = true;
+    }
+  });
+
+  if (needsGeneration) {
+    monthsToCheck.forEach((month) => {
+      if (!schedules[year]) schedules[year] = {};
+      if (!schedules[year][month]) schedules[year][month] = {};
+
+      const daysInMonth = new Date(year, month, 0).getDate();
+
+      const halfSize = Math.ceil(users.length / 2);
+      const group1 = users.slice(0, halfSize);
+      const group2 = users.slice(halfSize);
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = `${String(year).padStart(4, "0")}-${String(
+          month
+        ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+        if (!schedules[year][month][dateKey]) {
+          schedules[year][month][dateKey] = { user: {} };
+        }
+
+        const scheduleDate = new Date(year, month - 1, day);
+        let assignedGroup;
+
+        if ((day - 1) % 4 < 2) {
+          assignedGroup = group1;
+        } else {
+          assignedGroup = group2;
+        }
+
+        assignedGroup.forEach((user) => {
+          let userStatus;
+
+          const currentHourMSK = new Date().getUTCHours() + 3;
+
+          if (scheduleDate < new Date()) {
+            userStatus = {
+              note: ["дежурство прошло без инцидентов"],
+              status: "выполненное",
+            };
+          } else {
+            userStatus = { note: [], status: "будущее" };
+          }
+
+          schedules[year][month][dateKey].user[user.id] = userStatus;
+        });
+      }
+    });
+
+    localStorage.setItem("schedules", JSON.stringify(schedules));
+    return true;
+  }
+
+  return false;
+};
+
+const users = [
+  {
+    id: 1,
+    firstName: "Виталий",
+    lastName: "Галенко",
+    phone: "+7 (977) 549-79-73",
+    role: "Главный администратор",
+    login: "verve",
+    password: "mainadmin",
+  },
+  {
+    id: 253,
+    firstName: "Сотрудник",
+    lastName: "Первый",
+    phone: "+7 (111) 111-11-11",
+    role: "Сотрудник",
+    login: "111",
+    password: "111",
+  },
+  {
+    id: 538,
+    firstName: "Сотрудник",
+    lastName: "Второй",
+    phone: "+7 (222) 222-22-22",
+    role: "Сотрудник",
+    login: "222",
+    password: "222",
+  },
+  {
+    id: 404,
+    firstName: "Сотрудник",
+    lastName: "Третий",
+    phone: "+7 (333) 333-33-33",
+    role: "Сотрудник",
+    login: "333",
+    password: "333",
+  },
+  {
+    id: 470,
+    firstName: "Сотрудник",
+    lastName: "Четвертый",
+    phone: "+7 (444) 444-44-44",
+    role: "Сотрудник",
+    login: "444",
+    password: "444",
+  },
+  {
+    id: 235,
+    firstName: "Администратор",
+    lastName: "Первый",
+    phone: "+7 (222) 222-22-22",
+    role: "Администратор",
+    login: "www",
+    password: "www",
+  },
+];
+
+const year = new Date().getFullYear();
+generateScheduleIfNeeded(users, year);
+
+// --------------------------------------------------------------------------------------------
 if (
   titleTag.textContent === "Страница руководителя" ||
   titleTag.textContent === "Страница администратора" ||
@@ -24,7 +227,6 @@ if (
     const saveUserData = (userData) => {
       const storedUsers = getStoredUsers();
 
-      // Проверяем, существует ли пользователь с таким же логином
       const userExists = storedUsers.some(
         (user) => user.login === userData.login
       );
@@ -38,17 +240,17 @@ if (
       }
     };
 
-    const defaultEmployeeUser = {
-      id: 1,
-      firstName: "Виталий",
-      lastName: "Галенко",
-      phone: "+7 (977) 549-79-73",
-      role: "Главный администратор",
-      login: "verve",
-      password: "mainadmin",
-    };
+    // const defaultEmployeeUser = {
+    //   id: 1,
+    //   firstName: "Виталий",
+    //   lastName: "Галенко",
+    //   phone: "+7 (977) 549-79-73",
+    //   role: "Главный администратор",
+    //   login: "verve",
+    //   password: "mainadmin",
+    // };
 
-    saveUserData(defaultEmployeeUser);
+    // saveUserData(defaultEmployeeUser);
 
     const notificationText = notificationContainer.querySelector(
       ".completed-chek span"
@@ -108,6 +310,32 @@ if (
         const password = document.querySelector("#password").value.trim();
         const storedUsers = getStoredUsers();
 
+        // Проверка длины имени и фамилии
+        if (firstName.length > 18) {
+          showError("firstNameError", "Имя не может превышать 18 символов.");
+          return;
+        }
+        if (lastName.length > 18) {
+          showError("lastNameError", "Фамилия не может превышать 18 символов.");
+          return;
+        }
+
+        // Проверка длины логина и пароля
+        if (login.length < 3 || login.length > 18) {
+          showError(
+            "loginError",
+            "Логин должен содержать от 3 до 18 символов."
+          );
+          return;
+        }
+        if (password.length < 3 || password.length > 18) {
+          showError(
+            "passwordError",
+            "Пароль должен содержать от 3 до 18 символов."
+          );
+          return;
+        }
+
         // Проверка уникальности логина
         if (
           storedUsers.some(
@@ -143,10 +371,7 @@ if (
         }
 
         if (!phone || phone.length < 18) {
-          showError(
-            "phoneError",
-            "Пожалуйста, введите полный номер телефона (должен быть не менее 18 символов)."
-          );
+          showError("phoneError", "Пожалуйста, введите полный номер телефона.");
           return;
         }
 
@@ -376,14 +601,14 @@ if (
         return {
           isValid: false,
           errorElementId: "loginError",
-          errorMessage: "Логин не должен содержать русские символы.",
+          errorMessage: "Логин не должен содержать кириллицу.",
         };
       }
       if (/.*[а-яА-ЯёЁ].*/.test(password)) {
         return {
           isValid: false,
           errorElementId: "passwordError",
-          errorMessage: "Пароль не должен содержать русские символы.",
+          errorMessage: "Пароль не должен содержать кириллицу.",
         };
       }
       return { isValid: true };
@@ -541,60 +766,21 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 if (
-  titleTag.textContent === "Отчет прошедших дежурств" ||
-  titleTag.textContent === ""
+  titleTag.textContent === "График" ||
+  titleTag.textContent === "Страница руководителя отчеты"
 ) {
-  const ctx = document.querySelector(".myPieChart").getContext("2d");
-  let data = [13, 2];
-
-  const createGradient = (color) => {
-    const gradient = ctx.createRadialGradient(100, 100, 0, 110, 120, 90);
-    gradient.addColorStop(0, "rgba(128, 128, 128, 0.5)");
-    gradient.addColorStop(1, color);
-    return gradient;
-  };
-
-  const myPieChart = new Chart(ctx, {
-    type: "pie",
-    data: {
-      labels: ["Число выполненных дежурств", "Число замененных дежурств"],
-      datasets: [
-        {
-          label: "Мои данные",
-          data: data,
-          backgroundColor: [
-            createGradient("#77C375"),
-            createGradient("#D05AFF"),
-          ],
-          borderWidth: 0,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      cutout: "50%",
-      plugins: {
-        legend: {
-          display: false,
-          position: "top",
-        },
-      },
-    },
-  });
-}
-
-if (titleTag.textContent === "График") {
   document.addEventListener("DOMContentLoaded", () => {
     const today = new Date();
     const year = today.getFullYear();
-    const month = today.getMonth() + 1; // Месяцы в JavaScript начинаются с 0
+    const month = today.getMonth() + 1;
     const monthName = today.toLocaleString("ru-RU", { month: "long" });
     const monthElement = document.querySelector(".month");
-    monthElement.textContent = monthName;
+    if (titleTag.textContent === "График") {
+      monthElement.textContent = monthName;
+    }
 
-    // Переменная для хранения статуса системы
     let systemStatus = "Запрос не возможен";
-    let firstDate = null; // Переменная для хранения выбранной даты
+    let firstDate = null;
     let secondDate = null;
 
     const firstDayOfMonth = new Date(year, month - 1, 1);
@@ -626,8 +812,7 @@ if (titleTag.textContent === "График") {
     const getStoredUsers = () =>
       JSON.parse(localStorage.getItem("users")) || [];
 
-    const assignUsersToWork = () => {
-      const storedUsers = getStoredUsers();
+    const createScheduleIfNotExists = () => {
       const schedules = JSON.parse(localStorage.getItem("schedules")) || {};
 
       if (!schedules[year]) {
@@ -637,63 +822,52 @@ if (titleTag.textContent === "График") {
         schedules[year][month] = {};
       }
 
-      // Фильтруем пользователей по роли "Сотрудник"
+      if (Object.keys(schedules[year][month]).length > 0) {
+        console.log(
+          `График на ${month}/${year} уже существует. Назначение дежурств не требуется.`
+        );
+        return false;
+      }
+
+      const storedUsers = getStoredUsers();
       const employees = storedUsers.filter((user) => user.role === "Сотрудник");
 
-      // Определяем текущую дату
-      const today = new Date();
+      const halfSize = Math.ceil(employees.length / 2);
+      const group1 = employees.slice(0, halfSize);
+      const group2 = employees.slice(halfSize);
 
-      // Определяем дату начала генерации расписания (через 2 дня)
-      const startDate = new Date(today);
-      startDate.setDate(today.getDate());
-
-      // Генерируем расписание на 14 дней
-      for (let i = 0; i < 14; i++) {
-        const scheduleDate = new Date(startDate);
-        scheduleDate.setDate(startDate.getDate() + i);
-        const day = scheduleDate.getDate();
-        const monthIndex = scheduleDate.getMonth() + 1; // Месяцы в JavaScript начинаются с 0
-        const yearIndex = scheduleDate.getFullYear();
-
-        const dateKey = `${String(yearIndex).padStart(4, "0")}-${String(
-          monthIndex
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = `${String(year).padStart(4, "0")}-${String(
+          month
         ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-        if (!schedules[yearIndex]) {
-          schedules[yearIndex] = {};
-        }
-        if (!schedules[yearIndex][monthIndex]) {
-          schedules[yearIndex][monthIndex] = {};
+        if (!schedules[year][month][dateKey]) {
+          schedules[year][month][dateKey] = { user: {} };
         }
 
-        if (!schedules[yearIndex][monthIndex][dateKey]) {
-          schedules[yearIndex][monthIndex][dateKey] = { user: {} };
-        }
-
+        const scheduleDate = new Date(year, month - 1, day);
         let assignedGroup;
 
-        // Чередуем группы каждые 4 дня
-        if (i % 4 < employees.length / 2) {
-          assignedGroup = employees.slice(0, Math.ceil(employees.length / 2));
+        if ((day - 1) % 4 < 2) {
+          assignedGroup = group1;
         } else {
-          assignedGroup = employees.slice(Math.ceil(employees.length / 2));
+          assignedGroup = group2;
         }
 
         assignedGroup.forEach((user) => {
           let userStatus;
-          const currentHourMSK = today.getUTCHours() + 3; // Учитываем московское время (UTC+3)
+
+          const currentHourMSK = today.getUTCHours() + 3;
 
           if (scheduleDate.toDateString() === today.toDateString()) {
             if (currentHourMSK >= 8 && currentHourMSK < 20) {
-              // С 8:00 до 20:00
               userStatus = {
-                note: [],
+                note: ["дежурство проходит без инцидентов"],
                 status: "текущее",
               };
             } else if (currentHourMSK === 20 && today.getMinutes() >= 1) {
-              // После 20:01
               userStatus = {
-                note: [],
+                note: ["дежурство прошло без инцидентов"],
                 status: "выполненное",
               };
             } else {
@@ -701,22 +875,69 @@ if (titleTag.textContent === "График") {
             }
           } else if (scheduleDate < today) {
             userStatus = {
-              note: [],
+              note: ["дежурство прошло без инцидентов"],
               status: "выполненное",
             };
           } else {
             userStatus = { note: [], status: "будущее" };
           }
 
-          schedules[yearIndex][monthIndex][dateKey].user[user.id] = userStatus;
+          schedules[year][month][dateKey].user[user.id] = userStatus;
         });
       }
 
       localStorage.setItem("schedules", JSON.stringify(schedules));
+      return true;
     };
 
-    // Вызов функции для создания расписания
-    assignUsersToWork();
+    const updateUserStatuses = () => {
+      const schedules = JSON.parse(localStorage.getItem("schedules")) || {};
+      const today = new Date();
+
+      for (const date in schedules[year][month]) {
+        const dailySchedule = schedules[year][month][date];
+
+        for (const userId in dailySchedule.user) {
+          const userStatus = dailySchedule.user[userId];
+          const scheduleDate = new Date(date);
+
+          let updatedStatus;
+
+          if (userStatus.status === "Заменено") {
+            updatedStatus = { ...userStatus };
+          } else {
+            const currentHourMSK = today.getUTCHours() + 3;
+
+            if (scheduleDate.toDateString() === today.toDateString()) {
+              if (currentHourMSK >= 8 && currentHourMSK < 20) {
+                updatedStatus = {
+                  note: ["дежурство проходит без инцидентов"],
+                  status: "текущее",
+                };
+              } else if (currentHourMSK === 20 && today.getMinutes() >= 1) {
+                updatedStatus = {
+                  note: ["дежурство прошло без инцидентов"],
+                  status: "выполненное",
+                };
+              } else {
+                updatedStatus = { note: [], status: "будущее" };
+              }
+            } else if (scheduleDate < today) {
+              updatedStatus = {
+                note: ["дежурство прошло без инцидентов"],
+                status: "выполненное",
+              };
+            } else {
+              updatedStatus = { note: [], status: "будущее" };
+            }
+          }
+
+          dailySchedule.user[userId] = updatedStatus;
+        }
+      }
+
+      localStorage.setItem("schedules", JSON.stringify(schedules));
+    };
 
     const highlightUserStatusInCalendar = () => {
       const currentUserStr = localStorage.getItem("currentUser");
@@ -757,7 +978,11 @@ if (titleTag.textContent === "График") {
                   dateElements[dateElementIndex].classList.add("future");
                   console.log(`Добавлен класс 'future' для ${dateKey}`);
                   break;
-                case "wait_start_date": // Добавлено для нового статуса
+                case "Заменено":
+                  dateElements[dateElementIndex].classList.add("replaced");
+                  console.log(`Добавлен класс 'replaced' для ${dateKey}`);
+                  break;
+                case "wait_start_date":
                   dateElements[dateElementIndex].classList.add(
                     "wait_start_date"
                   );
@@ -772,9 +997,14 @@ if (titleTag.textContent === "График") {
       }
     };
 
+    if (createScheduleIfNotExists()) {
+      console.log(`График на ${month}/${year} был создан.`);
+    }
+
+    updateUserStatuses();
+
     highlightUserStatusInCalendar();
 
-    // Функция для обновления статусов пользователей на wait_start_date
     const updateUserStatusToWaitStartDate = () => {
       const currentUserStr = localStorage.getItem("currentUser");
       if (!currentUserStr) return;
@@ -787,10 +1017,8 @@ if (titleTag.textContent === "График") {
       const schedules = JSON.parse(localStorage.getItem("schedules")) || {};
       const waitData = JSON.parse(localStorage.getItem("wait")) || {};
 
-      // Создаем массив для хранения дат, которые не должны быть выбраны
       const excludedDates = new Set();
 
-      // Проходим по объекту wait и добавляем даты в excludedDates
       for (const dateKey in waitData) {
         if (waitData.hasOwnProperty(dateKey)) {
           const userData = waitData[dateKey].user;
@@ -803,23 +1031,19 @@ if (titleTag.textContent === "График") {
 
       if (!schedules[year] || !schedules[year][month]) return;
 
-      // Удаляем класс future у всех элементов с классом .date
       const dateElements = document.querySelectorAll(".calendar .date");
 
       dateElements.forEach((element) => {
-        // Проверяем, если дата находится в excludedDates
         const dayNumber = parseInt(element.textContent, 10);
         const dateKey = `${String(year).padStart(4, "0")}-${String(
           month
         ).padStart(2, "0")}-${String(dayNumber).padStart(2, "0")}`;
 
         if (excludedDates.has(dateKey)) {
-          // Если дата исключена, оставляем только класс .date
           element.classList.remove("wait_start_date-local");
           element.classList.remove("wait_end_date-local");
-          element.classList.add("del-bgc"); // Удаляем класс future
+          element.classList.add("del-bgc");
         } else {
-          // Если дата не исключена, просто удаляем класс future
           element.classList.remove("future");
         }
       });
@@ -833,14 +1057,12 @@ if (titleTag.textContent === "График") {
           const userSchedule =
             schedules[year][month][dateKey].user[currentUserId];
 
-          // Проверяем, есть ли дата в excludedDates
           if (excludedDates.has(dateKey)) {
-            continue; // Пропускаем эту дату
+            continue;
           }
 
           if (userSchedule && userSchedule.status === "будущее") {
-            userSchedule.status = "wait_start_date"; // Изменяем статус
-            // Обновляем localStorage
+            userSchedule.status = "wait_start_date";
             schedules[year][month][dateKey].user[currentUserId] = userSchedule;
           }
         }
@@ -849,11 +1071,9 @@ if (titleTag.textContent === "График") {
       localStorage.setItem("schedules", JSON.stringify(schedules));
     };
 
-    // Функция для сброса классов wait_start_date на future
     const resetWaitStartDateToFutureClassesOnlyIfSystemStatusIsNotPossible =
       () => {
         if (systemStatus === "Запрос не возможен") {
-          // Проверка статуса системы
           dateElements.forEach((dateElement) => {
             const dateKey = `${year}-${String(month).padStart(2, "0")}-${String(
               dateElement.textContent
@@ -861,21 +1081,19 @@ if (titleTag.textContent === "График") {
 
             firstDate = null;
             secondDate = null;
-            // Проверяем, если firstDate не null и совпадает с текущей датой
             if (
               dateElement.classList.contains("wait_start_date") &&
               firstDate !== dateKey
             ) {
-              dateElement.classList.remove("wait_start_date"); // Убираем класс wait_start_date
-              dateElement.classList.add("future"); // Добавляем класс future
+              dateElement.classList.remove("wait_start_date");
+              dateElement.classList.add("future");
               console.log(
                 `Класс 'wait_start_date' заменен на 'future' для даты ${dateElement.textContent}`
               );
             }
 
-            // Сбрасываем класс wait_end_date
             if (dateElement.classList.contains("wait_end_date")) {
-              dateElement.classList.remove("wait_end_date"); // Убираем класс wait_end_date
+              dateElement.classList.remove("wait_end_date");
               console.log(
                 `Класс 'wait_end_date' заменен на 'future' для даты ${dateElement.textContent}`
               );
@@ -884,67 +1102,59 @@ if (titleTag.textContent === "График") {
         }
       };
 
-    // Переключение видимости блоков с кнопками при нажатии на кнопки.
-
     const editButtonBlockDefault = document.querySelector(
       ".button-block__with-quest-defolt"
     );
     const newButtonBlock = document.querySelector(".new-button-block");
 
-    document.querySelector(".edit-btn").addEventListener("click", () => {
-      // Меняем статус системы на "Запрос возможен"
-      systemStatus = "Запрос возможен";
-      console.log(systemStatus);
+    if (titleTag.textContent === "График") {
+      document.querySelector(".edit-btn").addEventListener("click", () => {
+        systemStatus = "Запрос возможен";
+        console.log(systemStatus);
 
-      // Обновляем статусы пользователей
-      updateUserStatusToWaitStartDate();
+        updateUserStatusToWaitStartDate();
 
-      // Обновляем отображение в календаре
-      highlightUserStatusInCalendar(); // Снова вызываем для отражения изменений
+        highlightUserStatusInCalendar();
 
-      editButtonBlockDefault.style.display = "none";
-      newButtonBlock.style.display = "flex";
+        editButtonBlockDefault.style.display = "none";
+        newButtonBlock.style.display = "flex";
 
-      // Показываем уведомление с анимацией
-      const notificationBlock = document.querySelector(".notif-edit");
+        const notificationBlock = document.querySelector(".notif-edit");
 
-      notificationBlock.classList.add("show");
-      notificationBlock.style.display = "flex";
+        notificationBlock.classList.add("show");
+        notificationBlock.style.display = "flex";
 
-      setTimeout(() => {
+        setTimeout(() => {
+          notificationBlock.classList.remove("show");
+          setTimeout(() => {
+            notificationBlock.style.display = "flex";
+          }, 500);
+        }, 3000);
+      });
+      document.querySelector(".cancel-btn").addEventListener("click", () => {
+        editButtonBlockDefault.style.display = "flex";
+        newButtonBlock.style.display = "none";
+
+        highlightUserStatusInCalendar();
+        displayUserDatesFromLocalStorage();
+        const notificationBlock = document.querySelector(".notif-edit");
+
         notificationBlock.classList.remove("show");
+
         setTimeout(() => {
           notificationBlock.style.display = "flex";
         }, 500);
-      }, 3000);
-    });
 
-    document.querySelector(".cancel-btn").addEventListener("click", () => {
-      editButtonBlockDefault.style.display = "flex";
-      newButtonBlock.style.display = "none";
+        systemStatus = "Запрос не возможен";
 
-      highlightUserStatusInCalendar();
-      displayUserDatesFromLocalStorage();
-      const notificationBlock = document.querySelector(".notif-edit");
+        resetWaitStartDateToFutureClassesOnlyIfSystemStatusIsNotPossible();
+        firstDate = null;
+        secondDate = null;
+        console.log(firstDate);
+        console.log(systemStatus);
+      });
+    }
 
-      notificationBlock.classList.remove("show");
-
-      setTimeout(() => {
-        notificationBlock.style.display = "flex";
-      }, 500);
-
-      // Меняем статус системы обратно на "Запрос не возможен"
-      systemStatus = "Запрос не возможен";
-
-      resetWaitStartDateToFutureClassesOnlyIfSystemStatusIsNotPossible();
-      // Сбрасываем клики
-      firstDate = null;
-      secondDate = null;
-      console.log(firstDate);
-      console.log(systemStatus);
-    });
-
-    // Добавляем обработчик событий для дат с классом wait_start_date
     dateElements.forEach((dateElement) => {
       dateElement.addEventListener("click", () => {
         if (dateElement.classList.contains("wait_start_date")) {
@@ -953,42 +1163,32 @@ if (titleTag.textContent === "График") {
             "0"
           )}-${dateElement.textContent.padStart(2, "0")}`;
           console.log(`Выбрана дата: ${firstDate}`);
-          // Здесь можно добавить дополнительную логику обработки выбранной даты
 
-          // Сбрасываем классы wait_start_date на future, кроме firstDate
           resetWaitStartDateToFutureClasses();
         }
       });
     });
 
-    // Функция для сброса классов wait_start_date на future
-    // Добавляем обработчик событий для дат с классом wait_start_date
-
     dateElements.forEach((dateElement) => {
       dateElement.addEventListener("click", () => {
         if (dateElement.classList.contains("wait_start_date")) {
-          // Сохраняем первую дату
           firstDate = `${year}-${String(month).padStart(
             2,
             "0"
           )}-${dateElement.textContent.padStart(2, "0")}`;
           console.log(`Выбрана первая дата: ${firstDate}`);
 
-          // Сбрасываем классы wait_start_date на future, кроме firstDate
           resetWaitStartDateToFutureClasses();
         } else if (dateElement.classList.contains("wait_end_date")) {
-          // Сохраняем вторую дату
           secondDate = `${year}-${String(month).padStart(
             2,
             "0"
           )}-${dateElement.textContent.padStart(2, "0")}`;
           console.log(`Выбрана вторая дата: ${secondDate}`);
 
-          // Убираем классы wait_end_date и future для выбранной даты
           dateElement.classList.add("wait_end_date");
           dateElement.classList.remove("future");
 
-          // Сбрасываем все остальные wait_end_date на future, кроме secondDate
           resetWaitEndDates();
         }
       });
@@ -1000,36 +1200,32 @@ if (titleTag.textContent === "График") {
           dateElement.textContent
         ).padStart(2, "0")}`;
 
-        // Проверяем, если secondDate не null и совпадает с текущей датой
         if (
           dateElement.classList.contains("wait_end_date") &&
           secondDate !== dateKey
         ) {
-          dateElement.classList.remove("wait_end_date"); // Убираем класс wait_end_date
-          dateElement.classList.remove("future"); // Добавляем класс future
+          dateElement.classList.remove("wait_end_date");
+          dateElement.classList.remove("future");
         }
       });
     };
 
-    // Функция для сброса классов wait_start_date на future
     const resetWaitStartDateToFutureClasses = () => {
       dateElements.forEach((dateElement) => {
         const dateKey = `${year}-${String(month).padStart(2, "0")}-${String(
           dateElement.textContent
         ).padStart(2, "0")}`;
 
-        // Проверяем, если firstDate не null и совпадает с текущей датой
         if (
           dateElement.classList.contains("wait_start_date") &&
           firstDate !== dateKey
         ) {
-          dateElement.classList.remove("wait_start_date"); // Убираем класс wait_start_date
-          dateElement.classList.remove("future"); // Убираем класс future
+          dateElement.classList.remove("wait_start_date");
+          dateElement.classList.remove("future");
           console.log(
             `Класс 'wait_start_date' заменен на 'future' для даты ${dateElement.textContent}`
           );
 
-          // Проверка на наличие даты в графике дежурств текущего пользователя
           const schedules = JSON.parse(localStorage.getItem("schedules")) || {};
           const currentUserStr = localStorage.getItem("currentUser");
 
@@ -1040,7 +1236,6 @@ if (titleTag.textContent === "График") {
             console.log("Текущий пользователь:", currentUser);
             console.log("ID текущего пользователя:", currentUserId);
 
-            // Проверяем наличие расписания для текущего года и месяца
             if (!schedules[year]) {
               console.log(`Нет расписания для года ${year}`);
               return;
@@ -1050,39 +1245,34 @@ if (titleTag.textContent === "График") {
               return;
             }
 
-            const today = new Date(); // Определяем текущую дату
+            const today = new Date();
             const fourteenDaysFromNow = new Date(today);
-            fourteenDaysFromNow.setDate(today.getDate() + 14); // Определяем дату через 14 дней
-
+            fourteenDaysFromNow.setDate(today.getDate() + 14);
             dateElements.forEach((dateElement) => {
-              const day = parseInt(dateElement.textContent, 10); // Получаем день из элемента
+              const day = parseInt(dateElement.textContent, 10);
               const dateKey = `${year}-${String(month).padStart(
                 2,
                 "0"
               )}-${String(day).padStart(2, "0")}`;
               const userSchedule = schedules[year][month][dateKey];
 
-              // Логируем информацию о расписании
               console.log(`Расписание на ${dateKey}:`, userSchedule);
 
-              // Проверяем, является ли дата в пределах 14 дней
-              const scheduleDate = new Date(year, month - 1, day); // Создаем объект даты для сравнения
+              const scheduleDate = new Date(year, month - 1, day);
 
               if (scheduleDate > fourteenDaysFromNow) {
                 console.log(
                   `Дата ${dateKey} превышает предел в 14 дней и будет пропущена.`
                 );
-                return; // Пропускаем эту дату
+                return;
               }
 
-              // Проверяем наличие пользователя в расписании и класс .empty
               if (
                 !dateElement.classList.contains("empty") &&
                 (!userSchedule ||
                   !userSchedule.user ||
                   !userSchedule.user[currentUserId])
               ) {
-                // Если дата отсутствует в графике дежурств и не является пустой, добавляем класс wait_end_date
                 dateElement.classList.add("wait_end_date");
                 console.log(
                   `Класс 'wait_end_date' добавлен для даты ${dateElement.textContent}`
@@ -1102,65 +1292,56 @@ if (titleTag.textContent === "График") {
 
     const submitButton = document.querySelector(".submit-btn");
 
-    // Добавляем обработчик события на кнопку
-    submitButton.addEventListener("click", () => {
-      // Проверяем, равны ли firstDate и secondDate null
-      if (firstDate === null || secondDate === null) {
-        // Вызываем функцию для отображения уведомления
-        const notificationBlock = document.querySelector(".notif-edit");
+    if (titleTag.textContent === "График") {
+      submitButton.addEventListener("click", () => {
+        if (firstDate === null || secondDate === null) {
+          const notificationBlock = document.querySelector(".notif-edit");
 
-        notificationBlock.classList.add("show");
-        notificationBlock.style.display = "flex";
+          notificationBlock.classList.add("show");
+          notificationBlock.style.display = "flex";
 
-        setTimeout(() => {
-          notificationBlock.classList.remove("show");
           setTimeout(() => {
-            notificationBlock.style.display = "flex";
-          }, 500);
-        }, 3000);
-
-        return; // Прерываем выполнение функции, не меняя статус системы
-      }
-
-      // Проверяем, заполнены ли обе даты
-      if (firstDate !== null && secondDate !== null) {
-        // Получаем текущего пользователя из localStorage
-        const currentUserStr = localStorage.getItem("currentUser");
-        let currentUserId = null;
-
-        if (currentUserStr) {
-          const currentUser = JSON.parse(currentUserStr);
-          currentUserId = currentUser.id;
+            notificationBlock.classList.remove("show");
+            setTimeout(() => {
+              notificationBlock.style.display = "flex";
+            }, 500);
+          }, 3000);
         }
 
-        // Создаем объект wait с уникальной датой запроса
-        const now = new Date();
-        const requestDateKey = `${
-          now.getMonth() + 1
-        }-${now.getDate()}-${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}`;
-        // Получаем существующий объект wait из localStorage или создаем новый
-        const waitData = JSON.parse(localStorage.getItem("wait")) || {};
+        if (firstDate !== null && secondDate !== null) {
+          const currentUserStr = localStorage.getItem("currentUser");
+          let currentUserId = null;
 
-        // Добавляем новую запись с текущей датой запроса
-        waitData[requestDateKey] = {
-          user: {
-            userId: currentUserId,
-            firstDate: firstDate,
-            secondDate: secondDate,
-          },
-          replacedUserId: null,
-          statusWait: "ожидание",
-        };
+          if (currentUserStr) {
+            const currentUser = JSON.parse(currentUserStr);
+            currentUserId = currentUser.id;
+          }
 
-        // Сохраняем обновленный объект wait в localStorage
-        localStorage.setItem("wait", JSON.stringify(waitData));
+          const now = new Date();
+          const requestDateKey = `${
+            now.getMonth() + 1
+          }-${now.getDate()}-${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}`;
+          const waitData = JSON.parse(localStorage.getItem("wait")) || {};
 
-        // Меняем статус системы на "Запрос отправлен"
-        systemStatus = "Запрос отправлен";
-        console.log(`Статус системы изменен на: ${systemStatus}`);
-        showCompletionWindow();
-      }
-    });
+          waitData[requestDateKey] = {
+            user: {
+              userId: currentUserId,
+              firstDate: firstDate,
+              secondDate: secondDate,
+            },
+            replacedUserId: null,
+            statusWait: "ожидание",
+          };
+
+          localStorage.setItem("wait", JSON.stringify(waitData));
+
+          systemStatus = "Запрос отправлен";
+          console.log(`Статус системы изменен на: ${systemStatus}`);
+          showCompletionWindow();
+        }
+      });
+    }
+
     const showCompletionWindow = () => {
       const completionWindow = document.createElement("div");
       completionWindow.className = "owerflow-complitede";
@@ -1168,34 +1349,30 @@ if (titleTag.textContent === "График") {
       completionWindow.innerHTML = `
           <div class="completed-wrapper font-regular-menu">
               <span class="exit-completed"><img src="../icons/krest.svg" alt="cross"></span>
-              <div class="completed-chek" style="gap: 30px">
+              <div class="completed-chek" style="gap: 30px;margin: auto;">
                   <span>Запрос отправлен</span>
-                  <span><img src="../icons/checkbox.svg" alt=""></span>
+                  <span><img src="../icons/checkbox.svg" alt="" style></span>
               </div>
           </div>
       `;
 
-      // Находим элемент, куда будем добавлять окно
       const calendarBlock = document.querySelector(".calendar-block");
 
-      // Добавляем окно в указанный элемент
       calendarBlock.appendChild(completionWindow);
 
-      // Добавляем обработчик события для закрытия окна по клику на крестик
       const exitButton = completionWindow.querySelector(".exit-completed");
       exitButton.addEventListener("click", () => {
         calendarBlock.removeChild(completionWindow);
-        systemStatus = "Запрос не возможен"; // Возвращаем статус системы
+        systemStatus = "Запрос не возможен";
         newButtonBlock.style.display = "none";
         editButtonBlockDefault.style.display = "flex";
         location.reload();
       });
 
-      // Удаляем окно через 3 секунды, если не закрыто вручную
       setTimeout(() => {
         if (document.body.contains(completionWindow)) {
           calendarBlock.removeChild(completionWindow);
-          systemStatus = "Запрос не возможен"; // Возвращаем статус системы
+          systemStatus = "Запрос не возможен";
           console.log(`Статус системы изменен на: ${systemStatus}`);
           newButtonBlock.style.display = "none";
           editButtonBlockDefault.style.display = "flex";
@@ -1205,49 +1382,40 @@ if (titleTag.textContent === "График") {
     };
 
     const displayUserDatesFromLocalStorage = () => {
-      // Получаем текущего пользователя из localStorage
       const currentUserStr = localStorage.getItem("currentUser");
       let currentUserId = null;
 
       if (currentUserStr) {
         const currentUser = JSON.parse(currentUserStr);
-        currentUserId = currentUser.id; // Предполагаем, что id пользователя хранится в поле id
+        currentUserId = currentUser.id;
       }
 
-      // Извлекаем объект wait из localStorage
       const waitData = JSON.parse(localStorage.getItem("wait"));
 
-      // Проверяем, существует ли waitData
       if (waitData && currentUserId !== null) {
-        // Проходим по всем записям в waitData
         for (const dateKey in waitData) {
           if (waitData.hasOwnProperty(dateKey)) {
             const userData = waitData[dateKey].user;
 
-            // Проверяем, соответствует ли userId текущему пользователю
             if (userData.userId === currentUserId) {
-              const firstDate = userData.firstDate; // "2024-12-26"
-              const secondDate = userData.secondDate; // "2024-12-27"
+              const firstDate = userData.firstDate;
+              const secondDate = userData.secondDate;
 
-              // Преобразуем даты в формат DD для поиска элементов
-              const firstDateDay = new Date(firstDate).getDate(); // Получаем день месяца
-              const secondDateDay = new Date(secondDate).getDate(); // Получаем день месяца
+              const firstDateDay = new Date(firstDate).getDate();
+              const secondDateDay = new Date(secondDate).getDate();
 
-              // Находим все элементы с классом .date
               const dateElements = document.querySelectorAll(".calendar .date");
 
               dateElements.forEach((dateElement) => {
-                const dayNumber = parseInt(dateElement.textContent, 10); // Получаем текстовое содержание элемента
+                const dayNumber = parseInt(dateElement.textContent, 10);
 
-                // Проверяем наличие класса empty
                 if (!dateElement.classList.contains("empty")) {
-                  // Добавляем классы для отображения статусов
                   if (dayNumber === firstDateDay) {
                     dateElement.classList.add("wait_start_date-local");
-                    dateElement.classList.remove("del-bgc"); // Удаляем класс для первой даты
+                    dateElement.classList.remove("del-bgc");
                   } else if (dayNumber === secondDateDay) {
                     dateElement.classList.add("wait_end_date-local");
-                    dateElement.classList.remove("del-bgc"); // Удаляем класс для второй даты
+                    dateElement.classList.remove("del-bgc");
                   }
                 }
               });
@@ -1258,7 +1426,6 @@ if (titleTag.textContent === "График") {
         console.warn("Нет данных о пользователе или объект wait не найден.");
       }
     };
-    // Вызов функции для отображения дат при загрузке страницы или в нужный момент
     displayUserDatesFromLocalStorage();
 
     const removeCurrentDateFromWait = () => {
@@ -1267,43 +1434,48 @@ if (titleTag.textContent === "График") {
 
       if (currentUserStr) {
         const currentUser = JSON.parse(currentUserStr);
-        currentUserId = currentUser.id; // Предполагаем, что id пользователя хранится в поле id
+        currentUserId = currentUser.id;
       }
 
-      // Получаем текущую дату в формате YYYY-MM-DD
       const today = new Date();
-      const todayKey = today.toISOString().split("T")[0]; // Форматируем дату
+      const todayKey = today.toISOString().split("T")[0];
 
-      // Извлекаем объект wait из localStorage
       const waitData = JSON.parse(localStorage.getItem("wait")) || {};
 
-      // Проверяем, существует ли waitData и текущий пользователь
       if (waitData && currentUserId !== null) {
-        for (const dateKey in waitData) {
-          if (waitData.hasOwnProperty(dateKey)) {
-            const userData = waitData[dateKey].user;
+        let dateFound = false;
 
-            // Проверяем, соответствует ли userId текущему пользователю
-            if (userData.userId === currentUserId) {
-              // Если дата совпадает с текущей
-              if (dateKey === todayKey) {
-                delete waitData[dateKey]; // Удаляем объект с этой датой
+        for (const key in waitData) {
+          if (waitData.hasOwnProperty(key)) {
+            const userData = waitData[key].user;
+
+            if (userData && userData.userId === currentUserId) {
+              if (
+                userData.firstDate === todayKey ||
+                userData.secondDate === todayKey
+              ) {
+                delete waitData[key];
+                dateFound = true;
                 console.log(
-                  `Объект с датой ${todayKey} удален из wait для пользователя ${currentUserId}.`
+                  `Объект с ключом ${key} удален из wait для пользователя ${currentUserId}.`
                 );
               }
             }
           }
         }
 
-        // Обновляем localStorage с новым объектом wait
+        if (!dateFound) {
+          console.log(
+            `Нет записей для удаления для пользователя ${currentUserId} на дату ${todayKey}.`
+          );
+        }
+
         localStorage.setItem("wait", JSON.stringify(waitData));
       } else {
         console.warn("Нет данных о пользователе или объект wait не найден.");
       }
     };
 
-    // Вызов функции для удаления текущей даты из wait
     removeCurrentDateFromWait();
 
     const addRecordNode = document.querySelector(".node");
@@ -1311,18 +1483,16 @@ if (titleTag.textContent === "График") {
     const crossIcon = document.querySelector(".cross");
     const form = document.querySelector(".add-user-form");
     const inputField = document.querySelector(".node-input");
-    let records = []; // Массив для хранения записей
+    let records = [];
 
-    // Получаем текущего пользователя из localStorage
     const currentUserStr = localStorage.getItem("currentUser");
     let currentUserId = null;
 
     if (currentUserStr) {
       const currentUser = JSON.parse(currentUserStr);
-      currentUserId = currentUser.id; // Предполагаем, что id пользователя хранится в поле id
+      currentUserId = currentUser.id;
     }
 
-    // Проверяем статус текущего пользователя в расписании
     const schedules = JSON.parse(localStorage.getItem("schedules")) || {};
     let isCurrentStatus = false;
 
@@ -1333,161 +1503,1282 @@ if (titleTag.textContent === "График") {
             schedules[year][month][dateKey].user[currentUserId];
           if (userSchedule && userSchedule.status === "текущее") {
             isCurrentStatus = true;
-            break; // Выход из цикла, если найден статус "текущее"
+            break;
           }
         }
-        if (isCurrentStatus) break; // Выход из цикла по месяцам
+        if (isCurrentStatus) break;
       }
-      if (isCurrentStatus) break; // Выход из цикла по годам
+      if (isCurrentStatus) break;
     }
 
-    // Обработчик клика по "Добавить запись"
-    addRecordNode.addEventListener("click", () => {
-      if (isCurrentStatus) {
-        overflowNode.style.display = "block"; // Показываем блок с формой
-        inputField.value = ""; // Очищаем поле ввода
-        inputField.focus(); // Устанавливаем фокус на поле ввода
-      } else {
-        // Создаем окно с предупреждением
-        const completionWindow = document.createElement("div");
-        completionWindow.className = "owerflow-complitede";
-        completionWindow.style.display = "flex";
-        completionWindow.innerHTML = `
-                <div class="completed-wrapper font-regular-menu">
-                    <span class="exit-completed"><img src="../icons/krest.svg" alt="cross"></span>
-                    <div class="completed-chek" style="gap: 30px">
-                        <span>Для добавления записи необходимо быть на дежурстве</span>
-                    </div>
-                </div>
-            `;
+    if (titleTag.textContent === "График") {
+      addRecordNode.addEventListener("click", () => {
+        if (isCurrentStatus) {
+          overflowNode.style.display = "block";
+          inputField.value = "";
+          inputField.focus();
+        } else {
+          const completionWindow = document.createElement("div");
+          completionWindow.className = "owerflow-complitede";
+          completionWindow.style.display = "flex";
+          completionWindow.innerHTML = `
+                  <div class="completed-wrapper font-regular-menu">
+                      <span class="exit-completed"><img src="../icons/krest.svg" alt="cross"></span>
+                      <div class="completed-chek" style="gap: 30px">
+                          <span>Для добавления записи необходимо быть на дежурстве</span>
+                      </div>
+                  </div>
+              `;
 
-        // Находим элемент, куда будем добавлять окно
-        const calendarBlock = document.querySelector(".calendar-block");
+          const calendarBlock = document.querySelector(".calendar-block");
 
-        // Добавляем окно в указанный элемент
-        calendarBlock.appendChild(completionWindow);
+          calendarBlock.appendChild(completionWindow);
 
-        // Обработчик закрытия окна
-        const exitCompletedButton =
-          completionWindow.querySelector(".exit-completed");
-        exitCompletedButton.addEventListener("click", () => {
-          calendarBlock.removeChild(completionWindow); // Удаляем окно при закрытии
-        });
-      }
-    });
-
-    // Обработчик клика по иконке "cross"
-    crossIcon.addEventListener("click", () => {
-      overflowNode.style.display = "none"; // Скрываем блок с формой
-    });
-
-    // Обработчик отправки формы
-    form.addEventListener("submit", (event) => {
-      event.preventDefault(); // Предотвращаем стандартное поведение формы
-
-      const inputValue = inputField.value.trim(); // Получаем значение из поля ввода
-
-      if (inputValue) {
-        records.push(inputValue); // Добавляем запись в массив
-        console.log("Запись добавлена:", inputValue);
-        console.log("Все записи:", records);
-
-        // Создаем новый объект для хранения записей в localStorage
-        const notesData = JSON.parse(localStorage.getItem("notesData")) || {};
-
-        const today = new Date();
-        const todayKey = today.toISOString().split("T")[0]; // Форматируем дату как YYYY-MM-DD
-
-        if (!notesData[todayKey]) {
-          notesData[todayKey] = { user: {} }; // Инициализируем объект для текущей даты, если его нет
+          const exitCompletedButton =
+            completionWindow.querySelector(".exit-completed");
+          exitCompletedButton.addEventListener("click", () => {
+            calendarBlock.removeChild(completionWindow);
+          });
         }
+      });
 
-        if (!notesData[todayKey].user[currentUserId]) {
-          notesData[todayKey].user[currentUserId] = { note: [] }; // Инициализируем объект для пользователя, если его нет
-        }
-
-        notesData[todayKey].user[currentUserId].note.push(inputValue); // Добавляем запись в массив note
-
-        localStorage.setItem("notesData", JSON.stringify(notesData)); // Обновляем localStorage
-
-        // Очищаем поле ввода и скрываем форму после добавления записи
-        inputField.value = "";
+      crossIcon.addEventListener("click", () => {
         overflowNode.style.display = "none";
-      } else {
-        alert("Пожалуйста, введите подробности об инциденте."); // Предупреждение, если поле пустое
-      }
-    });
+      });
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const inputValue = inputField.value.trim();
+
+        if (inputValue) {
+          records.push(inputValue);
+          console.log("Запись добавлена:", inputValue);
+          console.log("Все записи:", records);
+
+          const notesData = JSON.parse(localStorage.getItem("notesData")) || {};
+
+          const today = new Date();
+          const todayKey = today.toISOString().split("T")[0];
+
+          if (!notesData[todayKey]) {
+            notesData[todayKey] = { user: {} };
+          }
+
+          if (!notesData[todayKey].user[currentUserId]) {
+            notesData[todayKey].user[currentUserId] = { note: [] };
+          }
+
+          notesData[todayKey].user[currentUserId].note.push(inputValue);
+
+          localStorage.setItem("notesData", JSON.stringify(notesData));
+
+          inputField.value = "";
+          overflowNode.style.display = "none";
+        } else {
+          alert("Пожалуйста, введите подробности об инциденте.");
+        }
+      });
+    }
   });
 }
 
 if (titleTag.textContent === "Страница администратора Редактирование графика") {
-  // Шаг 1: Извлечение данных из localStorage
   const waitData = JSON.parse(localStorage.getItem("wait"));
   const usersData = JSON.parse(localStorage.getItem("users"));
+  const schedulesData = JSON.parse(localStorage.getItem("schedules"));
+  const confirmData = JSON.parse(localStorage.getItem("confirm")) || {};
 
-  // Функция для форматирования даты
-  function formatDate(dateString) {
-    const options = { day: "numeric", month: "long" }; // Форматируем как "11 ноября"
+  const formatDate = (dateString) => {
+    const options = { day: "numeric", month: "long" };
     const date = new Date(dateString);
     return date.toLocaleDateString("ru-RU", options);
-  }
+  };
 
-  // Шаг 2: Проверка наличия данных
-  if (waitData && usersData) {
-    // Проходим по всем записям в waitData
+  if (waitData && usersData && schedulesData) {
+    let hasRequests = false;
+
     for (const key in waitData) {
       if (waitData.hasOwnProperty(key)) {
         const entry = waitData[key];
 
-        // Проверяем статус записи
         if (entry.statusWait === "ожидание") {
-          const userId = entry.user.userId; // Получаем userId
-          const firstDate = formatDate(entry.user.firstDate); // Форматируем первую дату
-          const secondDate = formatDate(entry.user.secondDate); // Форматируем вторую дату
+          hasRequests = true;
+          const userId = entry.user.userId;
+          const firstDate = entry.user.firstDate.split("T")[0];
+          const secondDate = entry.user.secondDate.split("T")[0];
 
-          // Находим пользователя по userId в массиве usersData
           const user = usersData.find((u) => u.id === userId);
           if (user) {
-            const firstName = user.firstName;
-            const lastName = user.lastName;
-
-            // Форматируем имя и фамилию как "Фамилия И."
-            const formattedName = `${lastName} ${firstName.charAt(0)}.`;
-
-            // Шаг 3: Создание динамического элемента
+            const formattedName = `${user.lastName} ${user.firstName.charAt(
+              0
+            )}.`;
             const editBlock = document.createElement("div");
             editBlock.classList.add("edit");
 
             editBlock.innerHTML = `
-                          <div class="edit-block font-regular-white">
-                              <div class="edit-request">Запрос на изменение графика от:</div>
-                              <div class="name-user">
-                                  <span class="formatted-name">${formattedName}</span>
-                                  <span class="first-date">заменить дежурство ${firstDate} на </span>
-                                  <span class="second-date">${secondDate}</span>
-                              </div>
-                          </div>
-                          <div>
-                              <button class="edit-block-button font-bold">Внести изменения</button>
-                          </div>
-                      `;
+              <div class="edit-block font-regular-white">
+                <div class="edit-request">Запрос на изменение графика от:</div>
+                <div class="name-user">
+                  <span class="formatted-name">${formattedName}</span>
+                  <span class="first-date">заменить дежурство ${formatDate(
+                    entry.user.firstDate
+                  )} на </span>
+                  <span class="two-date">${formatDate(
+                    entry.user.secondDate
+                  )}</span>
+                </div>
+              </div>
+              <div>
+                <button class="edit-block-button font-bold">Внести изменения</button>
+              </div>
+              <div class="owerflow-edit" style="display: none;">
+                <div class="user-form-container-edit">
+                  <span class="cross"><img src="../icons/krest.svg" alt="cross"></span>
+                  <span class="font-medium-24px position-text-edit ">Изменение графика с ${formatDate(
+                    entry.user.firstDate
+                  )} на <span class="two-date">${formatDate(
+              entry.user.secondDate
+            )}</span></span>
+                  <span class="position-text-edit-n ">Выберите возможного сотрудника для замены:</span>
+                  <form class="add-user-form font-bold">
+                    <div class="input-container-edit">
+                      <label for="">
+                        <select name="edit-input" id="" class="edit-input"></select>
+                      </label>
+                      <img src="../icons/arrowSelect.svg" alt="" class="edit-arow">
+                      <button type="submit" class="edit-button-acc font-medium-white">Добавить запись</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            `;
 
-            // Шаг 4: Добавление элемента в DOM
-            const mainAdmin = document.querySelector(".main-admin");
-            if (mainAdmin) {
-              mainAdmin.appendChild(editBlock);
+            const selectElement = editBlock.querySelector(".edit-input");
+            const dateKey = entry.user.secondDate.split("T")[0];
+            const yearKey = new Date(entry.user.secondDate).getFullYear();
+            const monthKey = new Date(entry.user.secondDate).getMonth() + 1;
+
+            if (
+              schedulesData[yearKey] &&
+              schedulesData[yearKey][monthKey] &&
+              schedulesData[yearKey][monthKey][dateKey]
+            ) {
+              const usersOnDate =
+                schedulesData[yearKey][monthKey][dateKey].user;
+
+              for (const userId in usersOnDate) {
+                if (usersOnDate.hasOwnProperty(userId)) {
+                  const option = document.createElement("option");
+                  option.value = userId;
+                  const userDetails = usersData.find(
+                    (u) => u.id === parseInt(userId)
+                  );
+
+                  if (userDetails) {
+                    option.textContent = `${userDetails.lastName} ${userDetails.firstName}`;
+                  } else {
+                    option.textContent = `Пользователь ${userId}`;
+                  }
+
+                  selectElement.appendChild(option);
+                }
+              }
             }
-          } else {
-            console.error(
-              `Пользователь с ID ${userId} не найден в массиве users.`
-            );
+
+            editBlock
+              .querySelector(".add-user-form")
+              .addEventListener("submit", (event) => {
+                event.preventDefault();
+                const selectedUserId = selectElement.value;
+
+                if (!selectedUserId) {
+                  alert("Пожалуйста, выберите пользователя.");
+                  return;
+                }
+
+                delete schedulesData[yearKey][monthKey][dateKey].user[
+                  selectedUserId
+                ];
+
+                if (schedulesData[yearKey][monthKey][firstDate]?.user[userId]) {
+                  schedulesData[yearKey][monthKey][firstDate].user[
+                    userId
+                  ].status = "Заменено";
+                }
+
+                if (!schedulesData[yearKey][monthKey][firstDate]) {
+                  schedulesData[yearKey][monthKey][firstDate] = { user: {} };
+                }
+
+                schedulesData[yearKey][monthKey][firstDate].user[
+                  selectedUserId
+                ] = {
+                  note: [],
+                  status: "будущее",
+                };
+
+                confirmData[key] = {
+                  ...entry,
+                  statusWait: "Изменено",
+                  replacedUserId: selectedUserId,
+                };
+
+                delete waitData[key];
+
+                localStorage.setItem(
+                  "schedules",
+                  JSON.stringify(schedulesData)
+                );
+                localStorage.setItem("wait", JSON.stringify(waitData));
+                localStorage.setItem("confirm", JSON.stringify(confirmData));
+
+                alert(
+                  `Пользователь с ID ${selectedUserId} удален из ${formatDate(
+                    entry.user.secondDate
+                  )} и перемещен на ${formatDate(
+                    firstDate
+                  )} со статусом "будущее".`
+                );
+
+                location.reload();
+              });
+
+            editBlock
+              .querySelector(".edit-block-button")
+              .addEventListener("click", () => {
+                const overflowEdit = editBlock.querySelector(".owerflow-edit");
+                overflowEdit.style.display = "block";
+                overflowEdit.querySelector(".two-date").textContent =
+                  formatDate(entry.user.secondDate);
+              });
+
+            editBlock.querySelector(".cross").addEventListener("click", () => {
+              const overflowEdit = editBlock.querySelector(".owerflow-edit");
+              overflowEdit.style.display = "none";
+            });
+
+            document.querySelector(".request").appendChild(editBlock);
+          }
+        }
+      }
+
+
+
+
+    }
+
+    if (!hasRequests) {
+      const noRequestsMessage = document.createElement("div");
+      noRequestsMessage.classList.add("no-requests-message");
+      noRequestsMessage.textContent = "Запросов на изменение нет.";
+      document.querySelector(".request").appendChild(noRequestsMessage);
+    }
+  }
+}
+
+if (
+  titleTag.textContent === "График" ||
+  titleTag.textContent === "Отчет прошедших дежурств"
+) {
+  const formatDate = (dateString) => {
+    const options = { day: "numeric", month: "long" };
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ru-RU", options);
+  };
+
+  const confirmData = JSON.parse(localStorage.getItem("confirm")) || {};
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+  if (currentUser) {
+    const currentUserId = currentUser.id;
+
+    for (const key in confirmData) {
+      if (confirmData.hasOwnProperty(key)) {
+        const entry = confirmData[key];
+
+        // Получаем дату отправки в формате Date
+        const firstDate = new Date(entry.user.firstDate);
+        const secondDate = new Date(entry.user.secondDate);
+
+        // Получаем текущую дату
+        const currentDate = new Date();
+
+        // Проверяем, прошло ли больше 24 часов с первой даты
+        const oneDayInMillis = 24 * 60 * 60 * 1000; // Миллисекунды в одном дне
+        const isExpired = currentDate - firstDate > oneDayInMillis;
+
+        // Если уведомление не истекло, показываем его
+        if (!isExpired) {
+          const firstUserId = entry.user.userId;
+          const secondUserId = entry.replacedUserId;
+
+          let notificationMessage; // Переменная для хранения уведомления
+
+          if (Number(firstUserId) === currentUserId) {
+            notificationMessage = `
+              <span>Дежурство заменено с ${formatDate(
+                entry.user.firstDate
+              )} на ${formatDate(entry.user.secondDate)}</span>
+            `;
+          }
+
+          if (String(secondUserId) === String(currentUserId)) {
+            notificationMessage = `
+              <span>Вы были заменены в дежурстве с ${formatDate(
+                entry.user.secondDate
+              )} на ${formatDate(entry.user.firstDate)}.</span>
+            `;
           }
         }
       }
     }
   } else {
-    console.error(
-      "Не удалось извлечь данные из localStorage. Проверьте наличие объектов 'wait' и 'users'."
-    );
+    console.warn("Текущий пользователь не найден в localStorage.");
   }
+}
+
+// Функция для форматирования даты
+const formatDate = (dateString) => {
+  const options = { day: "numeric", month: "long" }; // Форматируем как "11 ноября"
+  const date = new Date(dateString);
+  return date.toLocaleDateString("ru-RU", options);
+};
+
+// Проверка заголовка страницы
+if (
+  titleTag.textContent === "Страница администратора Редактирование графика" ||
+  titleTag.textContent === "Страница администратора" ||
+  titleTag.textContent === "Страница руководителя"
+) {
+  const waitData = JSON.parse(localStorage.getItem("wait")) || {};
+
+  // Проверяем наличие новых запросов
+  if (Object.keys(waitData).length > 0) {
+    // Проверяем, было ли уже создано уведомление
+    const existingNotification = document.querySelector(
+      ".notification-new-requests"
+    );
+
+    if (!existingNotification) {
+      // Если уведомление еще не добавлено
+      const notificationMessage = document.createElement("div");
+      notificationMessage.classList.add("notification-new-requests"); // Добавляем класс для идентификации
+      notificationMessage.innerHTML = `
+        <span>Появились новые запросы на изменение графика.</span>
+      `;
+      document.querySelector(".notifications").appendChild(notificationMessage);
+    }
+  }
+}
+
+// Проверка заголовка страницы для уведомлений о замене
+if (
+  titleTag.textContent === "График" ||
+  titleTag.textContent === "Отчет прошедших дежурств"
+) {
+  const formatDate = (dateString) => {
+    const options = { day: "numeric", month: "long" };
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ru-RU", options);
+  };
+
+  const confirmData = JSON.parse(localStorage.getItem("confirm")) || {};
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+  if (currentUser) {
+    const currentUserId = currentUser.id;
+    const notificationsSet = new Set(); // Множество для хранения уникальных уведомлений
+
+    for (const key in confirmData) {
+      if (confirmData.hasOwnProperty(key)) {
+        const entry = confirmData[key];
+
+        // Получаем дату отправки в формате Date
+        const firstDate = new Date(entry.user.firstDate);
+        const secondDate = new Date(entry.user.secondDate);
+
+        // Получаем текущую дату
+        const currentDate = new Date();
+
+        // Проверяем, прошло ли больше 24 часов с первой даты
+        const oneDayInMillis = 24 * 60 * 60 * 1000; // Миллисекунды в одном дне
+        const isExpired = currentDate - firstDate > oneDayInMillis;
+
+        // Если уведомление не истекло, показываем его
+        if (!isExpired) {
+          const firstUserId = entry.user.userId;
+          const secondUserId = entry.replacedUserId;
+
+          let notificationMessage; // Переменная для хранения уведомления
+
+          if (Number(firstUserId) === currentUserId) {
+            notificationMessage = `
+              <span>Дежурство заменено с ${formatDate(
+                entry.user.firstDate
+              )} на ${formatDate(entry.user.secondDate)}</span>
+            `;
+          }
+
+          if (String(secondUserId) === String(currentUserId)) {
+            notificationMessage = `
+              <span>Вы были заменены в дежурстве с ${formatDate(
+                entry.user.secondDate
+              )} на ${formatDate(entry.user.firstDate)}.</span>
+            `;
+          }
+
+          // Если уведомление было создано и его еще нет в множестве, добавляем его в DOM
+          if (
+            notificationMessage &&
+            !notificationsSet.has(notificationMessage)
+          ) {
+            // Добавляем уведомление в множество
+
+            const notificationElement = document.createElement("div");
+            notificationElement.innerHTML = notificationMessage;
+            document
+              .querySelector(".notifications")
+              .appendChild(notificationElement);
+
+            // Удаляем уведомление через 30 секунд
+            setTimeout(() => {
+              notificationElement.remove(); // Удаляем элемент из DOM
+            }, 30000); // 30000 миллисекунд = 30 секунд
+          }
+        }
+      }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------------------
+
+if (titleTag.textContent === "Отчет прошедших дежурств") {
+  const ctx = document.querySelector(".myPieChart").getContext("2d");
+
+  // Задайте userId вручную
+  const currentUserData = localStorage.getItem("currentUser");
+
+  // Проверяем, есть ли данные и парсим их
+  const currentUser = currentUserData ? JSON.parse(currentUserData) : null;
+
+  // Извлекаем userId, если текущий пользователь существует
+  const userId = currentUser ? currentUser.id : null;
+
+  const schedules = JSON.parse(localStorage.getItem("schedules"));
+
+  const storedNotesData = localStorage.getItem("notesData");
+
+  // Проверяем, есть ли данные и парсим их
+  const notesData = storedNotesData ? JSON.parse(storedNotesData) : {};
+
+  // Создаем объект для хранения заметок конкретного пользователя
+  const userNotesData = {};
+
+  // Проходим по всем записям в notesData
+  for (const date in notesData) {
+    if (notesData.hasOwnProperty(date)) {
+      const userNotes = notesData[date].user;
+
+      // Проверяем, есть ли заметки для данного userId
+      if (userNotes && userNotes[userId]) {
+        // Если заметки есть, добавляем их в объект userNotesData
+        userNotesData[date] = {
+          user: {
+            [userId]: userNotes[userId],
+          },
+        };
+      }
+    }
+  }
+
+  let completedCount = 0;
+  let replacedCount = 0;
+  let futureCount = 0;
+
+  const reportYear = 2024;
+  let reportMonth = "12";
+
+  let myPieChart;
+
+  const monthNames = [
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
+  ];
+
+  let currentPage = 1;
+  const itemsPerPage = 4;
+
+  let dutyCardsArray = [];
+
+  const updateChart = () => {
+    completedCount = 0;
+    replacedCount = 0;
+    futureCount = 0;
+
+    const now = new Date();
+    const currentDateString = now.toISOString().split("T")[0];
+
+    if (schedules[reportYear] && schedules[reportYear][reportMonth]) {
+      const monthSchedules = schedules[reportYear][reportMonth];
+
+      for (const day in monthSchedules) {
+        const userSchedule = monthSchedules[day].user;
+
+        if (userSchedule[userId]) {
+          const status = userSchedule[userId].status;
+
+          if (status === "выполненное") {
+            completedCount++;
+          } else if (status === "Заменено") {
+            replacedCount++;
+          }
+        }
+      }
+
+      for (const day in monthSchedules) {
+        if (day > currentDateString) {
+          const userSchedule = monthSchedules[day].user;
+
+          if (userSchedule[userId]) {
+            const status = userSchedule[userId].status;
+
+            if (status !== "выполненное") {
+              futureCount++;
+            }
+          }
+        }
+      }
+    }
+
+    let data = [completedCount, replacedCount, futureCount];
+
+    const createGradient = (color) => {
+      const gradient = ctx.createRadialGradient(100, 100, 0, 110, 120, 90);
+      gradient.addColorStop(0, "rgba(128, 128, 128, 0.5)");
+      gradient.addColorStop(1, color);
+      return gradient;
+    };
+
+    if (myPieChart) {
+      myPieChart.destroy();
+    }
+
+    myPieChart = new Chart(ctx, {
+      type: "pie",
+      data: {
+        datasets: [
+          {
+            label: "Мои данные",
+            data: data,
+            backgroundColor: [
+              createGradient("#77C375"),
+              createGradient("#D05AFF"),
+              createGradient("#CACE00"),
+            ],
+            borderWidth: 0,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        cutout: "50%",
+        plugins: {
+          legend: {
+            display: true,
+            position: "top",
+          },
+        },
+      },
+    });
+
+    const selectedMonthName = monthNames[parseInt(reportMonth) - 1];
+
+    const monthGoElement = document.querySelector(".mounth-go");
+    if (monthGoElement) {
+      monthGoElement.textContent = ` ${selectedMonthName} ${reportYear}`;
+    }
+  };
+
+  updateChart();
+
+  const calendarIcon = document.getElementById("calendar-icon");
+  const monthDropdown = document.getElementById("month-dropdown");
+
+  calendarIcon.addEventListener("click", () => {
+    monthDropdown.style.display =
+      monthDropdown.style.display === "block" ? "none" : "block";
+  });
+
+  const monthItems = monthDropdown.querySelectorAll("li");
+
+  monthItems.forEach((item) => {
+    item.addEventListener("click", () => {
+      reportMonth = item.getAttribute("data-month");
+      console.log(`Выбран месяц: ${reportMonth}`);
+
+      updateChart();
+
+      monthDropdown.style.display = "none";
+
+      generateDutyCardsForCurrentUser();
+    });
+  });
+
+  document.addEventListener("click", (event) => {
+    if (
+      !calendarIcon.contains(event.target) &&
+      !monthDropdown.contains(event.target)
+    ) {
+      monthDropdown.style.display = "none";
+    }
+  });
+
+  const generateDutyCardsForCurrentUser = () => {
+    if (schedules[reportYear] && schedules[reportYear][reportMonth]) {
+      const monthSchedules = schedules[reportYear][reportMonth];
+
+      const mainContainer = document.querySelector(".fake-main");
+      mainContainer.innerHTML = "";
+
+      dutyCardsArray = [];
+
+      for (const day in monthSchedules) {
+        const userSchedule = monthSchedules[day].user;
+
+        if (userSchedule[userId]) {
+          // Используем заданный userId
+          const dutyData = userSchedule[userId];
+
+          const notesForDay =
+            notesData[day] &&
+            notesData[day].user[userId] &&
+            notesData[day].user[userId].note
+              ? notesData[day].user[userId].note.join(", ")
+              : "Нет записей";
+
+          const dutyCardHTML = `
+                    <div class="past font-regular">
+                        <div class="past-block">
+                            <div class="past-block__history">
+                                <div><span>Дежурство: </span><span class="duty-date">${parseInt(
+                                  day.split("-")[2]
+                                )} ${
+            monthNames[parseInt(reportMonth) - 1]
+          }</span></div>
+                                <div><span>Время дежурства: </span><span>${
+                                  dutyData.time || "8:00 - 20:00"
+                                }</span></div>
+                                <div><span>Статус: </span><span class="duty-status">${
+                                  dutyData.status
+                                }</span></div>
+                            </div>
+                            <div class="button-open">
+                                <button class="past-block__history-button font-bold-white">Подробности дежурств</button>
+                            </div>
+                        </div>
+                        <div class="discription close">
+                            <div class="discription-text font-regular-white">
+                                <span>Записи: </span><span class="duty-notes">${notesForDay}</span></div>
+                            <div class="discription-button__block">
+                                <button class="discription-button font-bold">Свернуть</button>
+                            </div>
+                        </div>
+                    </div>`;
+
+          dutyCardsArray.push(dutyCardHTML);
+        }
+      }
+
+      mainContainer.innerHTML = dutyCardsArray.join("");
+
+      displayDutyCards(dutyCardsArray);
+
+      setupPagination(dutyCardsArray.length);
+    }
+  };
+
+  const displayDutyCards = (cardsArray) => {
+    const mainContainer = document.querySelector(".fake-main");
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    mainContainer.innerHTML = "";
+
+    cardsArray.slice(startIndex, endIndex).forEach((cardHTML) => {
+      mainContainer.insertAdjacentHTML("beforeend", cardHTML);
+    });
+
+    attachAccordionFunctionality();
+  };
+
+  const setupPagination = (totalCards) => {
+    const paginationContainer = document.querySelector(".nav-number");
+
+    paginationContainer.innerHTML = "";
+
+    const totalPages = Math.ceil(totalCards / itemsPerPage);
+
+    for (let i = 1; i <= totalPages; i++) {
+      const pageSpan = document.createElement("span");
+      pageSpan.textContent = i;
+
+      if (i === currentPage) {
+        pageSpan.classList.add("active");
+      }
+
+      pageSpan.addEventListener("click", () => {
+        currentPage = i;
+        displayDutyCards(dutyCardsArray);
+        setupPagination(totalCards);
+      });
+
+      paginationContainer.appendChild(pageSpan);
+    }
+  };
+
+  const attachAccordionFunctionality = () => {
+    const detailButtons = document.querySelectorAll(
+      ".past-block__history-button"
+    );
+
+    detailButtons.forEach((detailButton) => {
+      detailButton.addEventListener("click", () => {
+        const descriptionBlock = detailButton
+          .closest(".past")
+          .querySelector(".discription");
+        descriptionBlock.classList.toggle("close");
+        detailButton.classList.toggle("close");
+      });
+    });
+
+    const collapseButtons = document.querySelectorAll(".discription-button");
+
+    collapseButtons.forEach((collapseButton) => {
+      collapseButton.addEventListener("click", () => {
+        const descriptionBlock = collapseButton.closest(".discription");
+        descriptionBlock.classList.add("close");
+        collapseButton
+          .closest(".past")
+          .querySelector(".past-block__history-button")
+          .classList.remove("close");
+      });
+    });
+  };
+
+  generateDutyCardsForCurrentUser();
+}
+// --------------------------------------------------------------------
+
+// if (titleTag.textContent === "Страница руководителя отчеты") {
+// // Получаем данные пользователей из localStorage
+// const users = JSON.parse(localStorage.getItem("users")) || [];
+
+// // Проверяем, соответствует ли заголовок страницы нужному значению
+// const titleTag = document.querySelector("title"); // Или используйте другой селектор, если необходимо
+// if (titleTag.textContent === "Страница руководителя отчеты") {
+//     const reportContainer = document.querySelector(".report"); // Контейнер для карточек
+
+//     // Очищаем контейнер перед добавлением новых карточек
+//     reportContainer.innerHTML = "";
+
+//     // Фильтруем пользователей с ролью "Сотрудник"
+//     const employees = users.filter(user => user.role === "Сотрудник");
+
+//     // Генерируем карточки для каждого сотрудника
+//     employees.forEach(employee => {
+//         const cardHTML = `
+//             <div class="report-block">
+//                 <span>${employee.firstName} ${employee.lastName} <span>${employee.id}</span></span>
+//                 <div class="report-block__user">
+//                     <span>Сводка о пользователе</span>
+//                     <span><img src="../icons/Arrowundblack.png" alt=""></span>
+//                 </div>
+//             </div>`;
+
+//         // Добавляем карточку в контейнер
+//         reportContainer.innerHTML += cardHTML;
+//     });
+// }
+// }
+if (titleTag.textContent === "Страница руководителя отчеты") {
+  // Создаем график и добавляем его в конец report-foter
+  const createReportUser = (user) => {
+    const createGraphBlock = () => {
+      const graphBlockHTML = `
+        <div class="graf-block-manager">
+          <div class="main-history__duty font-regular">
+            <div class="">
+              <img src="../icons/calendar.png" alt="календарь" id="calendar-icon" style="cursor:pointer;">
+            </div>
+            <div class="month-dropdown" id="month-dropdown">
+              <ul>
+                <li data-month="01">Январь</li>
+                <li data-month="02">Февраль</li>
+                <li data-month="03">Март</li>
+                <li data-month="04">Апрель</li>
+                <li data-month="05">Май</li>
+                <li data-month="06">Июнь</li>
+                <li data-month="07">Июль</li>
+                <li data-month="08">Август</li>
+                <li data-month="09">Сентябрь</li>
+                <li data-month="10">Октябрь</li>
+                <li data-month="11">Ноябрь</li>
+                <li data-month="12">Декабрь</li>
+              </ul>
+            </div>
+            <div class="short-state">
+              <div class="short-state__text"><span>Краткая сводка за</span><span class="mounth-go"></span></div>
+            </div>
+          </div>
+          <div class="open-graf">
+            <div class="open-graf__align-items font-regular-white">
+              <div class="open-graf__align-span">
+                <span><img src="../icons/EllipseGreen.png" alt="" style="width: 22px;height: 22px;"></span> 
+                <span>- Число выполненых дежурств</span>
+              </div>
+              <div class="open-graf__align-span">
+                <span><img src="../icons/EllipseYellow.png" alt="" style="width: 22px;height: 22px;"></span> 
+                <span>- Число запланированных дежурств</span>
+              </div>
+              <div class="open-graf__align-span">
+                <span><img src="../icons/EllipsePurple.png" alt="" style="width: 22px;height: 22px;"></span> 
+                <span>- Число замененных дежурств</span>
+              </div>
+            </div>
+            <div class="chart">
+              <div>
+                <canvas class="myPieChart" width="232" height="232"></canvas>
+              </div>
+              <div class="font-regular-white"><span> </span><span></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="fake-main-s"></div>
+        <div class="nav-number" style="color: #000;margin-left: 350px;"> <span
+                            class="active">1</span><span>2</span><span>3</span><span>4</span>
+                    </div>
+        `;
+
+      const reportFooter = document.querySelector(".report-foter");
+      reportFooter.insertAdjacentHTML("beforeend", graphBlockHTML);
+    };
+
+    createGraphBlock(); // Вызов функции для создания и добавления графика
+
+    const ctx = document.querySelector(".myPieChart").getContext("2d");
+
+    // Задайте userId вручную
+
+    // Задайте userId вручную
+    const userId = user; // Замените на нужный вам ID пользователя
+
+    // Получаем данные о заметках из localStorage
+    const storedNotesData = localStorage.getItem("notesData");
+
+    // Проверяем, есть ли данные и парсим их
+    const notesData = storedNotesData ? JSON.parse(storedNotesData) : {};
+
+    // Создаем объект для хранения заметок конкретного пользователя
+    const userNotesData = {};
+
+    // Проходим по всем записям в notesData
+    for (const date in notesData) {
+      if (notesData.hasOwnProperty(date)) {
+        const userNotes = notesData[date].user;
+
+        // Проверяем, есть ли заметки для данного userId
+        if (userNotes && userNotes[userId]) {
+          // Если заметки есть, добавляем их в объект userNotesData
+          userNotesData[date] = {
+            user: {
+              [userId]: userNotes[userId],
+            },
+          };
+        }
+      }
+    }
+
+    // Теперь у вас есть объект userNotesData, содержащий только заметки для указанного пользователя
+    console.log(userNotesData);
+
+    const schedules = JSON.parse(localStorage.getItem("schedules"));
+
+    let completedCount = 0;
+    let replacedCount = 0;
+    let futureCount = 0;
+
+    const reportYear = 2024;
+    let reportMonth = "12";
+
+    let myPieChart;
+
+    const monthNames = [
+      "Январь",
+      "Февраль",
+      "Март",
+      "Апрель",
+      "Май",
+      "Июнь",
+      "Июль",
+      "Август",
+      "Сентябрь",
+      "Октябрь",
+      "Ноябрь",
+      "Декабрь",
+    ];
+
+    let currentPage = 1;
+    const itemsPerPage = 4;
+
+    let dutyCardsArray = [];
+
+    const updateChart = () => {
+      completedCount = 0;
+      replacedCount = 0;
+      futureCount = 0;
+
+      const now = new Date();
+      const currentDateString = now.toISOString().split("T")[0];
+
+      if (schedules[reportYear] && schedules[reportYear][reportMonth]) {
+        const monthSchedules = schedules[reportYear][reportMonth];
+
+        for (const day in monthSchedules) {
+          const userSchedule = monthSchedules[day].user;
+
+          if (userSchedule[userId]) {
+            const status = userSchedule[userId].status;
+
+            if (status === "выполненное") {
+              completedCount++;
+            } else if (status === "Заменено") {
+              replacedCount++;
+            }
+          }
+        }
+
+        for (const day in monthSchedules) {
+          if (day > currentDateString) {
+            const userSchedule = monthSchedules[day].user;
+
+            if (userSchedule[userId]) {
+              const status = userSchedule[userId].status;
+
+              if (status !== "выполненное") {
+                futureCount++;
+              }
+            }
+          }
+        }
+      }
+
+      let data = [completedCount, replacedCount, futureCount];
+
+      const createGradient = (color) => {
+        const gradient = ctx.createRadialGradient(100, 100, 0, 110, 120, 90);
+        gradient.addColorStop(0, "rgba(128, 128, 128, 0.5)");
+        gradient.addColorStop(1, color);
+        return gradient;
+      };
+
+      if (myPieChart) {
+        myPieChart.destroy();
+      }
+
+      myPieChart = new Chart(ctx, {
+        type: "pie",
+        data: {
+          datasets: [
+            {
+              label: "Мои данные",
+              data: data,
+              backgroundColor: [
+                createGradient("#77C375"),
+                createGradient("#D05AFF"),
+                createGradient("#CACE00"),
+              ],
+              borderWidth: 0,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          cutout: "50%",
+          plugins: {
+            legend: {
+              display: true,
+              position: "top",
+            },
+          },
+        },
+      });
+
+      const selectedMonthName = monthNames[parseInt(reportMonth) - 1];
+
+      const monthGoElement = document.querySelector(".mounth-go");
+      if (monthGoElement) {
+        monthGoElement.textContent = ` ${selectedMonthName} ${reportYear}`;
+      }
+    };
+
+    updateChart();
+
+    const calendarIcon = document.getElementById("calendar-icon");
+    const monthDropdown = document.getElementById("month-dropdown");
+
+    calendarIcon.addEventListener("click", () => {
+      monthDropdown.style.display =
+        monthDropdown.style.display === "block" ? "none" : "block";
+    });
+
+    const monthItems = monthDropdown.querySelectorAll("li");
+
+    monthItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        reportMonth = item.getAttribute("data-month");
+        console.log(`Выбран месяц: ${reportMonth}`);
+
+        updateChart();
+
+        monthDropdown.style.display = "none";
+
+        generateDutyCardsForCurrentUser();
+      });
+    });
+
+    document.addEventListener("click", (event) => {
+      if (
+        !calendarIcon.contains(event.target) &&
+        !monthDropdown.contains(event.target)
+      ) {
+        monthDropdown.style.display = "none";
+      }
+    });
+
+    const generateDutyCardsForCurrentUser = () => {
+      if (schedules[reportYear] && schedules[reportYear][reportMonth]) {
+        const monthSchedules = schedules[reportYear][reportMonth];
+
+        const mainContainer = document.querySelector(".fake-main-s");
+        mainContainer.innerHTML = "";
+
+        dutyCardsArray = [];
+
+        for (const day in monthSchedules) {
+          const userSchedule = monthSchedules[day].user;
+
+          if (userSchedule[userId]) {
+            // Используем заданный userId
+            const dutyData = userSchedule[userId];
+
+            const notesForDay =
+              notesData[day] &&
+              notesData[day].user[userId] &&
+              notesData[day].user[userId].note
+                ? notesData[day].user[userId].note.join(", ")
+                : "Нет записей";
+
+            const dutyCardHTML = `
+                       <div class="past font-regular">
+                           <div class="past-block">
+                               <div class="past-block__history">
+                                   <div><span>Дежурство: </span><span class="duty-date">${parseInt(
+                                     day.split("-")[2]
+                                   )} ${
+              monthNames[parseInt(reportMonth) - 1]
+            }</span></div>
+                                   <div><span>Время дежурства: </span><span>${
+                                     dutyData.time || "8:00 - 20:00"
+                                   }</span></div>
+                                   <div><span>Статус: </span><span class="duty-status">${
+                                     dutyData.status
+                                   }</span></div>
+                               </div>
+                               <div class="button-open">
+                                   <button class="past-block__history-button font-bold-white">Подробности дежурств</button>
+                               </div>
+                           </div>
+                           <div class="discription close">
+                               <div class="discription-text font-regular-white">
+                                   <span>Записи: </span><span class="duty-notes">${notesForDay}</span></div>
+                               <div class="discription-button__block">
+                                   <button class="discription-button font-bold">Свернуть</button>
+                               </div>
+                           </div>
+                       </div>`;
+
+            dutyCardsArray.push(dutyCardHTML);
+          }
+        }
+
+        mainContainer.innerHTML = dutyCardsArray.join("");
+
+        displayDutyCards(dutyCardsArray);
+
+        setupPagination(dutyCardsArray.length);
+      }
+    };
+
+    const displayDutyCards = (cardsArray) => {
+      const mainContainer = document.querySelector(".fake-main-s");
+
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+
+      mainContainer.innerHTML = "";
+
+      cardsArray.slice(startIndex, endIndex).forEach((cardHTML) => {
+        mainContainer.insertAdjacentHTML("beforeend", cardHTML);
+      });
+
+      attachAccordionFunctionality();
+    };
+
+    const setupPagination = (totalCards) => {
+      const paginationContainer = document.querySelector(".nav-number");
+
+      paginationContainer.innerHTML = "";
+
+      const totalPages = Math.ceil(totalCards / itemsPerPage);
+
+      for (let i = 1; i <= totalPages; i++) {
+        const pageSpan = document.createElement("span");
+        pageSpan.textContent = i;
+
+        if (i === currentPage) {
+          pageSpan.classList.add("active");
+        }
+
+        pageSpan.addEventListener("click", () => {
+          currentPage = i;
+          displayDutyCards(dutyCardsArray);
+          setupPagination(totalCards);
+        });
+
+        paginationContainer.appendChild(pageSpan);
+      }
+    };
+
+    const attachAccordionFunctionality = () => {
+      const detailButtons = document.querySelectorAll(
+        ".past-block__history-button"
+      );
+
+      detailButtons.forEach((detailButton) => {
+        detailButton.addEventListener("click", () => {
+          const descriptionBlock = detailButton
+            .closest(".past")
+            .querySelector(".discription");
+          descriptionBlock.classList.toggle("close");
+          detailButton.classList.toggle("close");
+        });
+      });
+
+      const collapseButtons = document.querySelectorAll(".discription-button");
+
+      collapseButtons.forEach((collapseButton) => {
+        collapseButton.addEventListener("click", () => {
+          const descriptionBlock = collapseButton.closest(".discription");
+          descriptionBlock.classList.add("close");
+          collapseButton
+            .closest(".past")
+            .querySelector(".past-block__history-button")
+            .classList.remove("close");
+        });
+      });
+    };
+
+    generateDutyCardsForCurrentUser();
+  };
+
+  // Получаем пользователей из localStorage
+  let users = JSON.parse(localStorage.getItem("users"));
+
+  // Фильтруем пользователей с ролью "Сотрудник"
+  let employees = users.filter((user) => user.role === "Сотрудник");
+
+  // Находим элемент, в который будем добавлять карточки
+  let reportDiv = document.querySelector(".report");
+
+  // Переменная для хранения ссылки на текущую открытую карточку
+  let currentOpenCard = null;
+
+  // Создаем карточки для каждого сотрудника
+  employees.forEach((employee) => {
+    // Создаем элемент карточки
+    let card = document.createElement("div");
+    card.className = "report-wrapper";
+
+    // Добавляем содержимое карточки без report-foter
+    card.innerHTML = `
+        <div class="report-block">
+            <span class="card-user-name">${employee.firstName} ${employee.lastName}</span>
+            <div class="report-block__user">
+                <span>Сводка о пользователе</span>
+                <span><img src="../icons/Arrowundblack.png" alt=""></span>
+            </div>
+        </div>
+    `;
+
+    // Находим элемент report-block внутри карточки
+    const reportBlock = card.querySelector(".report-block");
+
+    // Добавляем обработчик события клика только на report-block
+    reportBlock.addEventListener("click", () => {
+      // Ищем элемент report-foter в текущей карточке
+      let footerDiv = card.querySelector(".report-foter");
+
+      if (footerDiv) {
+        // Если report-foter существует, удаляем его
+        card.removeChild(footerDiv);
+        currentOpenCard = null; // Сбрасываем текущую открытую карточку
+      } else {
+        // Если report-foter не существует, проверяем открытую карточку
+        if (currentOpenCard) {
+          // Удаляем report-foter из предыдущей открытой карточки, если она существует
+          let previousFooterDiv =
+            currentOpenCard.querySelector(".report-foter");
+          if (previousFooterDiv) {
+            currentOpenCard.removeChild(previousFooterDiv);
+          }
+        }
+
+        // Создаем новый элемент report-foter
+        footerDiv = document.createElement("div");
+        footerDiv.className = "report-foter";
+
+        // Создаем новый элемент для добавления в report-foter
+        let footerContent = document.createElement("div");
+        footerContent.textContent = `Отчет для пользователя с ID: ${employee.id}`;
+
+        // Добавляем созданный элемент в report-foter
+        footerDiv.appendChild(footerContent);
+
+        // Добавляем report-foter в карточку
+        card.appendChild(footerDiv);
+
+        // Вызываем функцию createReportUser с ID сотрудника
+        createReportUser(employee.id);
+
+        // Обновляем ссылку на текущую открытую карточку
+        currentOpenCard = card;
+      }
+    });
+
+    // Добавляем карточку в конец элемента reportDiv
+    reportDiv.appendChild(card);
+  });
 }

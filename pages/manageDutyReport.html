@@ -4,11 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Страница руководителя</title>
+    <title>Страница руководителя отчеты</title>
     <link rel="stylesheet" href="../style/reset.css">
     <link rel="stylesheet" href="../style/normalize.css">
     <link rel="stylesheet" href="../style/style.css">
     <script defer src="../js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -25,12 +26,13 @@
                 <div class="second-header__block-manage">
                     <div class="link-block">
                         <li><a href="managerPage.html" class="link">Пользователи</a></li>
-                        <li><a href="" class="link active">Отчет дежурств</a></li>
+                        <li><a href="" class="link active">Отчеты дежурств</a></li>
                     </div>
-                    <div class="log-out-button__block"><button class="log-out-button font-bold-white"><img src="../icons/exit.svg"
-                                alt="выход "><span class="user-name">Виталий Г.</span></button></div>
+                    <div class="log-out-button__block"><button class="log-out-button font-bold-white"><img
+                                src="../icons/exit.svg" alt="выход "><span class="user-name">Виталий Г.</span></button>
+                    </div>
                 </div>
-                
+
             </header>
             <section class="main-block">
                 <aside class="dute__aside ">
@@ -39,11 +41,9 @@
                             <div class="notice-block">
                                 <span><img src="../icons/notice.svg" alt="оповещение"></span>
                                 <span>Уведомления</span>
-                                <span class="arrow-und"><img src="../icons/ArrowBottom.png" alt=""></span>
+                                <span class="arrow-und"></span>
                             </div>
                             <div class="notifications">
-                                <span>Заменено дежурство на 14 октября </span>
-                                <span>Заменено дежурство на 13 октября </span>
                             </div>
                         </div>
                     </div>
@@ -53,39 +53,31 @@
                         <input type="text" placeholder="Поиск пользователя">
                         <button><img src="../icons/search.svg" alt=""></button>
                     </div>
+
                     <div class="report">
-                        <div class="report-block">
-                            <span>Александр Ц.</span>
-                            <div class="report-block__user">
-                                <span>Сводка о пользователе</span><span><img src="../icons/Arrowundblack.png"
-                                        alt=""></span>
-                            </div>
-                        </div>
 
-                        <div class="report-block">
-                            <span>Александр Ц.</span>
-                            <div class="report-block__user">
-                                <span>Сводка о пользователе</span><span><img src="../icons/Arrowundblack.png"
-                                        alt=""></span>
+                        <!-- <div class="report-wrapper">
+                            <div class="report-block">
+                                <span class="card-user-name">Александр Ц.</span>
+                                <div class="report-block__user">
+                                    <span>Сводка о пользователе</span><span><img src="../icons/Arrowundblack.png"
+                                            alt=""></span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="report-block">
-                            <span>Александр Ц.</span>
-                            <div class="report-block__user">
-                                <span>Сводка о пользователе</span><span><img src="../icons/Arrowundblack.png"
-                                        alt=""></span>
-                            </div>
-                        </div>
-                        
-                        <div>
+                            <div>
+                                <div class="report-foter">
 
-                        </div>
+                                </div>
+                            </div>
+                        </div> -->
+
                     </div>
-                    
-                    <!-- <div class="nav-number-report"> <span
+
+
+                    <!-- <div class="nav-number" style="color: #000;margin-left: 350px;"> <span
                             class="active">1</span><span>2</span><span>3</span><span>4</span>
                     </div> -->
-
+                    <div class="second-main"></div>
                 </main>
             </section>
             <footer class="dute__footer">
@@ -97,7 +89,7 @@
                     </div>
                 </div>
                 <div>
-                    <li><a href="" class="link">Вопрос руководству</a>
+                    <!-- <li><a href="" class="link">Вопрос руководству</a> -->
                 </div>
         </div>
         </footer>

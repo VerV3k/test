@@ -25,10 +25,11 @@
                 <div class="second-header__block-manage">
                     <div class="link-block">
                         <li><a href="" class="link active">Пользователи</a></li>
-                        <li><a href="administratorEdit.html" class="link">Отчет дежурств</a></li>
+                        <li><a href="administratorEdit.html" class="link">Редактирование графика</a></li>
                     </div>
                     <div class="log-out-button__block"><button class="log-out-button font-bold-white"><img
-                                src="../icons/exit.svg" alt="выход "><span class="user-name">Владислав Ш.</span></button></div>
+                                src="../icons/exit.svg" alt="выход "><span class="user-name">Владислав
+                                Ш.</span></button></div>
                 </div>
             </header>
             <section class="main-block">
@@ -38,11 +39,11 @@
                             <div class="notice-block">
                                 <span><img src="../icons/notice.svg" alt="оповещение"></span>
                                 <span>Уведомления</span>
-                                <span class="arrow-und"><img src="../icons/ArrowBottom.png" alt=""></span>
+                                <span class="arrow-und"></span>
                             </div>
                             <div class="notifications">
-                                <span>Заменено дежурство на 14 октября </span>
-                                <span>Заменено дежурство на 13 октября </span>
+                                <!-- <span>Заменено дежурство на 14 октября </span>
+                                <span>Заменено дежурство на 13 октября </span> -->
                             </div>
                         </div>
                     </div>
@@ -99,35 +100,30 @@
                                 <div class="input-container">
                                     <label for="firstName">Имя:</label>
                                     <input type="text" id="firstName" name="firstName" required>
-                                    <span class="error-message" id="firstNameError"></span> <!-- Элемент для ошибки -->
-
                                     <label for="lastName">Фамилия:</label>
                                     <input type="text" id="lastName" name="lastName" required>
-                                    <span class="error-message" id="lastNameError"></span> <!-- Элемент для ошибки -->
-
                                     <label for="phone">Телефон:</label>
                                     <input type="tel" id="phone" name="phone">
-                                    <span class="error-message" id="phoneError"></span> <!-- Элемент для ошибки -->
                                 </div>
-
                                 <div class="input-container">
                                     <label for="role">Роль:</label>
                                     <select id="role" name="role" required>
+                                        <option value="Сотрудник">Сотрудник</option>
                                         <option value="Администратор">Администратор</option>
                                         <option value="Главный администратор">Главный Администратор</option>
-                                        <option value="Сотрудник">Сотрудник</option>
                                     </select>
-
                                     <label for="login">Логин:</label>
                                     <input type="text" id="login" name="login" required>
-                                    <span class="error-message" id="loginError"></span> <!-- Элемент для ошибки -->
-
                                     <label for="password">Пароль:</label>
                                     <input type="password" id="password" name="password" required>
-                                    <span class="error-message" id="passwordError"></span> <!-- Элемент для ошибки -->
 
                                     <button type="submit" class="add-button-ac font-bold-white">Добавить
                                         пользователя</button>
+                                    <span class="error-message" id="passwordError"></span> 
+                                    <span class="error-message" id="loginError"></span>
+                                    <span class="error-message" id="phoneError"></span> 
+                                    <span class="error-message" id="lastNameError"></span>
+                                    <span class="error-message" id="firstNameError"></span> 
                                 </div>
                             </form>
                         </div>
@@ -143,7 +139,7 @@
                     </div>
                 </div>
                 <div>
-                    <li><a href="" class="link">Вопрос руководству</a>
+                    <!-- <li><a href="" class="link">Вопрос руководству</a> -->
                 </div>
         </div>
         </footer>
